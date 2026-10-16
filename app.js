@@ -4,8 +4,6 @@ const QUESTIONS = window.QUESTIONS || [];
 
 const card = document.getElementById("card");
 const questionText = document.getElementById("questionText");
-const frontIcon = document.getElementById("frontIcon");
-const backIcon = document.getElementById("backIcon");
 const answerText = document.getElementById("answerText");
 const answerLabel = document.getElementById("answerLabel");
 const counter = document.getElementById("counter");
@@ -74,8 +72,6 @@ function render(){
   card.classList.remove("flipped");
   currentMode = null;
   questionText.textContent = q.question;
-  frontIcon.textContent = q.icon;
-  backIcon.textContent = q.icon;
   answerText.textContent = "";
   document.querySelector(".card-back").classList.remove("simple-mode","deep-mode");
 }

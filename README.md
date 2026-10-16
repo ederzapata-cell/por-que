@@ -24,3 +24,8 @@ Abre `index.html` en el navegador. Para una prueba más fiel, sirve la carpeta c
 3. conectar pagos
 4. convertir a PWA
 5. audio TTS
+
+## Diseño visual actual
+- Diseño tipográfico, sin imágenes ni emojis
+- La pregunta es el protagonista visual
+- Optimizado para lectura y uso móvil
