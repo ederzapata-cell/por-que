@@ -30,9 +30,10 @@ function shuffle(arr){
 function loadOrCreateOrder(){
   const stored = JSON.parse(localStorage.getItem("pq_order") || "null");
   if(stored && stored.length === QUESTIONS.length) return stored;
-  const hook = shuffle(QUESTIONS.slice(0, 15));
-  const rest = shuffle(QUESTIONS.slice(15));
-  const order = [...hook, ...rest].map(q=>q.id);
+
+  // Aleatoriedad total: todas las preguntas pertenecen al mismo banco.
+  // Las primeras 10 gratuitas pueden salir de cualquiera de las 100.
+  const order = shuffle(QUESTIONS).map(q=>q.id);
   localStorage.setItem("pq_order", JSON.stringify(order));
   return order;
 }
