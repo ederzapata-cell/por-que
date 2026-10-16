@@ -157,9 +157,9 @@ window.QUESTIONS = [
   },
   {
     "id": 27,
-    "question": "¿Por qué a veces una habitación queda en silencio de repente?",
-    "simple": "Porque las personas se van copiando sin darse cuenta: cuando varias dejan de hablar, las demás también pueden hacerlo.",
-    "deep": "En grupos, la conversación depende de turnos y señales sociales. Si varios intercambios terminan al mismo tiempo, puede aparecer una pausa colectiva repentina."
+    "question": "¿Por qué a veces todos se quedan en silencio al mismo tiempo?",
+    "simple": "Porque varias conversaciones pueden terminar casi a la vez y las personas esperan, sin darse cuenta, que alguien más empiece a hablar.",
+    "deep": "La conversación en grupo depende de turnos y señales sociales. Cuando varios turnos terminan simultáneamente puede aparecer una pausa colectiva antes de que alguien tome de nuevo la palabra."
   },
   {
     "id": 28,
@@ -175,9 +175,9 @@ window.QUESTIONS = [
   },
   {
     "id": 30,
-    "question": "¿Por qué sentimos que alguien nos mira?",
-    "simple": "Porque tu cerebro está muy atento a caras, ojos y movimientos a tu alrededor, incluso cuando no los miras directamente.",
-    "deep": "Los humanos somos muy sensibles a señales sociales y a la dirección de la mirada. La visión periférica y la atención pueden detectar pistas sutiles."
+    "question": "¿Por qué a veces sentimos que alguien nos está mirando?",
+    "simple": "Porque nuestro cerebro detecta muy rápido ojos, caras y movimientos, incluso por el rabillo del ojo.",
+    "deep": "La visión periférica y los sistemas de atención son muy sensibles a señales sociales. A veces detectamos pistas reales y otras veces interpretamos señales ambiguas como una mirada dirigida hacia nosotros."
   },
   {
     "id": 31,
@@ -194,20 +194,20 @@ window.QUESTIONS = [
   {
     "id": 33,
     "question": "¿Por qué nos da sueño después de comer mucho?",
-    "simple": "Porque el cuerpo dedica energía a digerir y algunas señales del cerebro favorecen la relajación.",
-    "deep": "Después de una comida abundante cambian hormonas, glucosa y actividad del sistema nervioso. Todo eso puede aumentar la sensación de somnolencia."
+    "simple": "Porque una comida grande activa procesos de digestión y señales del cuerpo que favorecen la relajación y la somnolencia.",
+    "deep": "Después de comer cambian hormonas, glucosa y actividad del sistema nervioso. Esos cambios pueden reducir el estado de alerta, sobre todo tras comidas abundantes."
   },
   {
     "id": 34,
-    "question": "¿Por qué olemos la lluvia antes de que llegue?",
-    "simple": "Porque el viento puede traer hacia nosotros sustancias que salen del suelo y del aire antes de que empiece a llover.",
-    "deep": "Antes y durante la lluvia pueden liberarse compuestos como la geosmina y aceites del suelo. El viento puede transportarlos y producir ese olor característico."
+    "question": "¿Por qué podemos oler la lluvia antes de que empiece?",
+    "simple": "Porque el viento puede traer hasta nosotros olores del suelo y del aire antes de que caigan las primeras gotas.",
+    "deep": "Compuestos como la geosmina y aceites del suelo pueden liberarse cuando cambia la humedad y ser transportados por el viento antes de que la lluvia llegue a nuestra ubicación."
   },
   {
     "id": 35,
-    "question": "¿Por qué el pan se pone duro con el tiempo?",
-    "simple": "Porque pierde humedad y cambia la forma en que se organizan sus almidones.",
-    "deep": "El endurecimiento del pan se debe en gran parte a la retrogradación del almidón: sus moléculas se reorganizan y expulsan parte del agua."
+    "question": "¿Por qué el pan se pone duro aunque no esté quemado?",
+    "simple": "Porque con el tiempo pierde humedad y sus almidones se reorganizan, haciendo que la miga se vuelva más firme.",
+    "deep": "El endurecimiento ocurre sobre todo por retrogradación del almidón: sus moléculas se reorganizan y cambian la forma en que retienen el agua."
   },
   {
     "id": 36,
@@ -241,9 +241,9 @@ window.QUESTIONS = [
   },
   {
     "id": 41,
-    "question": "¿Por qué nos pican los ojos cuando estamos cansados?",
-    "simple": "Porque parpadeamos menos y la superficie del ojo puede secarse.",
-    "deep": "La fatiga y el uso prolongado de pantallas pueden reducir el parpadeo. Eso hace que la película lagrimal se evapore más rápido y genere irritación."
+    "question": "¿Por qué nos arden los ojos cuando estamos muy cansados?",
+    "simple": "Porque al estar cansados solemos parpadear menos y los ojos se secan más.",
+    "deep": "La fatiga, especialmente frente a pantallas, reduce la frecuencia de parpadeo. La película lagrimal se evapora más rápido y la superficie ocular se irrita."
   },
   {
     "id": 42,
@@ -266,14 +266,14 @@ window.QUESTIONS = [
   {
     "id": 45,
     "question": "¿Por qué algunas personas estornudan al mirar una luz fuerte?",
-    "simple": "Porque en algunas personas la señal de la luz se mezcla con el reflejo del estornudo.",
-    "deep": "El reflejo fótico del estornudo parece deberse a una conexión cruzada entre vías nerviosas relacionadas con la luz y el nervio trigémino."
+    "simple": "Porque en algunas personas la señal de la luz activa por error parte del reflejo que provoca el estornudo.",
+    "deep": "Es el reflejo fótico del estornudo. Se cree que existe una conexión cruzada entre vías nerviosas de la visión y el nervio trigémino, que participa en el estornudo."
   },
   {
     "id": 46,
-    "question": "¿Por qué nos salen lágrimas cuando reímos mucho?",
-    "simple": "Porque al reír fuerte apretamos músculos alrededor de los ojos y eso puede empujar lágrimas hacia afuera.",
-    "deep": "La risa intensa activa músculos faciales, respiración y presión alrededor de los conductos lagrimales. Eso puede estimular o desplazar lágrimas."
+    "question": "¿Por qué lloramos cuando nos reímos demasiado?",
+    "simple": "Porque al reír con fuerza apretamos músculos alrededor de los ojos y eso puede hacer salir lágrimas.",
+    "deep": "La risa intensa activa músculos faciales y cambia la presión alrededor de los conductos lagrimales. Eso puede estimular o desplazar lágrimas hacia afuera."
   },
   {
     "id": 47,
@@ -308,8 +308,8 @@ window.QUESTIONS = [
   {
     "id": 52,
     "question": "¿Por qué el agua hierve a menor temperatura en una montaña?",
-    "simple": "Porque arriba hay menos presión del aire y el agua necesita menos calor para formar vapor.",
-    "deep": "Al disminuir la presión atmosférica, la presión de vapor del agua iguala antes a la del ambiente. Por eso hierve a una temperatura menor."
+    "simple": "Porque en las montañas hay menos presión del aire y el agua necesita menos temperatura para convertirse en vapor.",
+    "deep": "Con menor presión atmosférica, la presión de vapor del agua iguala antes a la del ambiente. Por eso hierve a una temperatura menor que al nivel del mar."
   },
   {
     "id": 53,
@@ -319,9 +319,9 @@ window.QUESTIONS = [
   },
   {
     "id": 54,
-    "question": "¿Por qué las plantas crecen hacia la luz?",
-    "simple": "Porque sus células crecen de forma desigual y hacen que el tallo se incline hacia donde hay más luz.",
-    "deep": "El fototropismo ocurre porque hormonas como las auxinas se distribuyen de forma desigual y provocan mayor crecimiento en el lado sombreado."
+    "question": "¿Por qué las plantas se inclinan hacia la luz?",
+    "simple": "Porque el lado que recibe menos luz crece un poco más y empuja el tallo hacia la zona iluminada.",
+    "deep": "En el fototropismo, hormonas como las auxinas se acumulan más en el lado sombreado y hacen que esas células se alarguen más, curvando el tallo hacia la luz."
   },
   {
     "id": 55,
@@ -350,8 +350,8 @@ window.QUESTIONS = [
   {
     "id": 59,
     "question": "¿Por qué las cebras tienen rayas?",
-    "simple": "Porque sus rayas pueden ayudar a confundir insectos y quizá también a controlar el calor.",
-    "deep": "La explicación exacta sigue estudiándose, pero hay evidencia fuerte de que las rayas reducen el aterrizaje de ciertos insectos que pican."
+    "simple": "Porque las rayas ayudan a evitar que ciertos insectos que pican aterricen fácilmente sobre su cuerpo.",
+    "deep": "La evidencia más sólida indica que las rayas dificultan el aterrizaje de tábanos y otros insectos que pican. Otras explicaciones, como regulación térmica o reconocimiento, siguen estudiándose."
   },
   {
     "id": 60,
@@ -362,20 +362,20 @@ window.QUESTIONS = [
   {
     "id": 61,
     "question": "¿Por qué los camaleones cambian de color?",
-    "simple": "Para comunicarse, controlar su temperatura y responder al ambiente.",
-    "deep": "Cambian la forma en que estructuras microscópicas de su piel reflejan la luz. No lo hacen solo para camuflarse, también por temperatura y señales sociales."
+    "simple": "Porque su piel puede cambiar la forma en que refleja la luz cuando cambia su temperatura, su estado o cuando se comunica con otros.",
+    "deep": "Los camaleones modifican estructuras microscópicas de su piel que reflejan distintas longitudes de onda. El cambio puede servir para comunicación, regulación térmica y respuesta al entorno."
   },
   {
     "id": 62,
-    "question": "¿Por qué los peces no se ahogan bajo el agua?",
-    "simple": "Porque usan branquias para sacar oxígeno del agua.",
-    "deep": "Las branquias tienen superficies muy finas y vasos sanguíneos que permiten que el oxígeno disuelto pase del agua a la sangre."
+    "question": "¿Por qué los peces pueden respirar bajo el agua?",
+    "simple": "Porque sus branquias sacan del agua el oxígeno que necesitan.",
+    "deep": "Las branquias tienen una gran superficie y muchos vasos sanguíneos. El oxígeno disuelto en el agua pasa a la sangre mientras el dióxido de carbono sale."
   },
   {
     "id": 63,
     "question": "¿Por qué las aves no se electrocutan al pararse en un cable?",
-    "simple": "Porque la electricidad no atraviesa su cuerpo si sus dos patas están casi al mismo voltaje.",
-    "deep": "Para que circule corriente por el cuerpo debe existir una diferencia de potencial significativa. Una ave sobre un solo cable tiene ambas patas casi al mismo potencial."
+    "simple": "Porque la electricidad no tiene un camino para atravesar su cuerpo hacia otro lugar: sus dos patas están sobre el mismo cable.",
+    "deep": "Una corriente peligrosa necesita una diferencia de voltaje entre dos puntos. Como ambas patas están casi al mismo voltaje, casi no circula corriente por el cuerpo. Sería peligroso tocar otro cable o tierra al mismo tiempo."
   },
   {
     "id": 64,
@@ -385,9 +385,9 @@ window.QUESTIONS = [
   },
   {
     "id": 65,
-    "question": "¿Por qué las medusas pueden picar aunque estén muertas?",
-    "simple": "Porque sus células urticantes pueden seguir activándose después de que el animal muere.",
-    "deep": "Los cnidocitos contienen estructuras que disparan toxinas por estímulos físicos o químicos. Algunas pueden seguir funcionando durante un tiempo después de la muerte."
+    "question": "¿Por qué una medusa puede picar incluso después de morir?",
+    "simple": "Porque algunas de sus células urticantes siguen funcionando durante un tiempo después de que el animal muere.",
+    "deep": "Los cnidocitos pueden disparar sus estructuras tóxicas por estímulos físicos o químicos sin necesitar que todo el animal esté vivo."
   },
   {
     "id": 66,
@@ -416,14 +416,14 @@ window.QUESTIONS = [
   {
     "id": 70,
     "question": "¿Por qué los gatos ronronean?",
-    "simple": "Muchas veces porque están tranquilos, pero también pueden hacerlo cuando tienen miedo o dolor.",
-    "deep": "El ronroneo parece producirse por actividad rítmica de músculos de la laringe. Puede aparecer en estados de bienestar, estrés o incluso recuperación."
+    "simple": "Porque hacen vibrar músculos de la garganta cuando están tranquilos, buscan calmarse o incluso cuando sienten estrés.",
+    "deep": "El ronroneo parece producirse por contracciones rítmicas de músculos de la laringe. Puede aparecer durante bienestar, miedo, dolor o recuperación, por eso no siempre significa lo mismo."
   },
   {
     "id": 71,
-    "question": "¿Por qué algunas personas recuerdan caras pero olvidan nombres?",
-    "simple": "Porque reconocer una cara y recordar una palabra usan procesos distintos en el cerebro.",
-    "deep": "El reconocimiento visual puede funcionar aunque falle la recuperación verbal. Un nombre es una etiqueta arbitraria y suele necesitar más asociaciones para recordarse."
+    "question": "¿Por qué recordamos una cara pero olvidamos el nombre de la persona?",
+    "simple": "Porque reconocer una cara y recordar una palabra son tareas distintas, y los nombres suelen ser más difíciles de recuperar.",
+    "deep": "El reconocimiento visual puede funcionar sin que aparezca la etiqueta verbal. Los nombres son asociaciones arbitrarias y normalmente requieren más conexiones de memoria para recuperarse."
   },
   {
     "id": 72,
@@ -451,15 +451,15 @@ window.QUESTIONS = [
   },
   {
     "id": 76,
-    "question": "¿Por qué una mentira puede ser más difícil de recordar que la verdad?",
-    "simple": "Porque tienes que inventar detalles y después recordar lo que inventaste.",
-    "deep": "Mentir suele exigir más memoria de trabajo y control mental: hay que crear una versión, mantenerla consistente y evitar contradicciones."
+    "question": "¿Por qué una mentira suele ser más difícil de recordar que la verdad?",
+    "simple": "Porque al mentir tienes que inventar detalles y luego recordar exactamente qué inventaste.",
+    "deep": "Mentir exige más memoria de trabajo y control mental: hay que construir una versión, mantenerla consistente y evitar contradicciones."
   },
   {
     "id": 77,
     "question": "¿Por qué a veces sentimos que ya vivimos una situación?",
-    "simple": "Porque el cerebro puede reconocer una sensación de familiaridad aunque no recuerde de dónde viene.",
-    "deep": "El déjà vu podría aparecer cuando los sistemas de familiaridad y recuerdo no coinciden: algo se siente conocido sin que exista un recuerdo claro que lo explique."
+    "simple": "Porque el cerebro puede marcar una experiencia nueva como familiar aunque no encuentre un recuerdo real de ella.",
+    "deep": "En el déjà vu, los sistemas que producen sensación de familiaridad pueden activarse sin que exista un recuerdo concreto asociado. Esa descoordinación genera la impresión de haber vivido antes el momento."
   },
   {
     "id": 78,
@@ -470,14 +470,14 @@ window.QUESTIONS = [
   {
     "id": 79,
     "question": "¿Por qué se nos pega el acento de otras personas?",
-    "simple": "Porque el cerebro tiende a imitar sonidos y ritmos de quienes escuchamos mucho.",
-    "deep": "La acomodación lingüística hace que ajustemos pronunciación, ritmo y vocabulario según el grupo con el que interactuamos, muchas veces sin darnos cuenta."
+    "simple": "Porque nuestro cerebro imita sonidos y ritmos de las personas con las que hablamos mucho.",
+    "deep": "La acomodación lingüística hace que ajustemos pronunciación, ritmo y vocabulario al grupo con el que interactuamos, muchas veces sin darnos cuenta."
   },
   {
     "id": 80,
     "question": "¿Por qué aprendemos mejor cuando explicamos algo a otra persona?",
-    "simple": "Porque para explicarlo tienes que organizarlo y comprobar si realmente lo entiendes.",
-    "deep": "Explicar obliga a recuperar información, relacionarla y detectar vacíos. Esa recuperación activa fortalece la memoria más que solo releer."
+    "simple": "Porque para explicarlo tienes que ordenar las ideas y darte cuenta de lo que sí entiendes y lo que no.",
+    "deep": "Explicar obliga a recuperar información, relacionarla y detectar vacíos. Esa recuperación activa fortalece la memoria más que releer pasivamente."
   },
   {
     "id": 81,
