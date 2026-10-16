@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#FFF9F3" />
+  <title>¿Por qué?</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div class="brand" aria-label="¿Por qué?">¿Por qué?</div>
+      <div class="counter" id="counter">0 / 10 gratis</div>
+    </header>
+
+    <section class="tabs" aria-label="Navegación principal">
+      <button class="tab active" data-tab="explore">Explorar</button>
+      <button class="tab" data-tab="mine">Mis preguntas <span id="mineCount">0</span></button>
+    </section>
+
+    <section class="stage">
+      <div class="card-stack">
+        <article class="question-card" id="card">
+          <div class="card-inner">
+            <div class="card-face card-front">
+              <div class="illustration" id="frontIcon">✨</div>
+              <div class="question" id="questionText">Cargando…</div>
+              <div class="choice-row">
+                <button class="choice simple" data-mode="simple">Sencillo</button>
+                <button class="choice deep" data-mode="deep">Profundo</button>
+              </div>
+            </div>
+
+            <div class="card-face card-back">
+              <div class="answer-top">
+                <button class="back-question" id="backToQuestion" aria-label="Volver a la pregunta">↶</button>
+                <div class="illustration small" id="backIcon">✨</div>
+              </div>
+              <div class="answer-label" id="answerLabel">Sencillo</div>
+              <div class="answer" id="answerText"></div>
+              <div class="choice-row persistent">
+                <button class="choice simple" data-mode="simple">Sencillo</button>
+                <button class="choice deep" data-mode="deep">Profundo</button>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <div class="swipe-hint" id="swipeHint">← desliza para descubrir otra</div>
+      </div>
+
+      <div class="empty-state hidden" id="emptyState">
+        <div class="empty-icon">📚</div>
+        <h2>Todavía no tienes preguntas</h2>
+        <p>Descubre algunas en Explorar y aparecerán aquí.</p>
+      </div>
+    </section>
+  </main>
+
+  <div class="paywall hidden" id="paywall" role="dialog" aria-modal="true" aria-labelledby="paywallTitle">
+    <div class="paywall-card">
+      <button class="close-paywall" id="closePaywall" aria-label="Cerrar">×</button>
+      <div class="paywall-icon">✨</div>
+      <h2 id="paywallTitle">¿Seguimos descubriendo?</h2>
+      <p>Ya viste tus 10 preguntas gratis. En la versión final aquí podrás desbloquear más para siempre.</p>
+      <div class="plans">
+        <button class="plan">
+          <strong>50 preguntas</strong>
+          <span>próximamente</span>
+        </button>
+        <button class="plan">
+          <strong>200 preguntas</strong>
+          <span>próximamente</span>
+        </button>
+        <button class="plan featured">
+          <strong>Desbloquear todo</strong>
+          <span>próximamente</span>
+        </button>
+      </div>
+      <p class="prototype-note">Prototipo: pagos y registro se conectarán después.</p>
+    </div>
+  </div>
+
+  <script src="questions.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
