@@ -1,5 +1,6 @@
 (() => {
   const auth = window.pqFirebaseAuth;
+  const db = window.pqFirestore;
   if (!auth) {
     console.error("Firebase Auth no se inicializó.");
     return;
@@ -31,6 +32,43 @@
   function initialFor(user) {
     const value = user?.displayName || user?.email || "G";
     return value.trim().charAt(0).toUpperCase() || "G";
+  }
+
+  async function ensureUserDocument(user) {
+    if (!user || !db) return;
+
+    const ref = db.collection("users").doc(user.uid);
+
+    try {
+      const snap = await ref.get();
+
+      if (!snap.exists) {
+        await ref.set({
+          uid: user.uid,
+          name: user.displayName || "",
+          email: user.email || "",
+          photoURL: user.photoURL || "",
+          provider: "google",
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+          discoveredQuestions: [],
+          unlockedQuestions: [],
+          currentIndex: Number(localStorage.getItem("pq_current_index") || 0),
+          plan: "free"
+        });
+      } else {
+        await ref.set({
+          name: user.displayName || "",
+          email: user.email || "",
+          photoURL: user.photoURL || "",
+          lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+      }
+
+      window.pqUserDocRef = ref;
+    } catch (error) {
+      console.error("No se pudo crear/actualizar el usuario en Firestore:", error);
+    }
   }
 
   function renderUser(user) {
@@ -118,8 +156,14 @@
     openAuth();
   });
 
-  auth.onAuthStateChanged((user) => {
+  auth.onAuthStateChanged(async (user) => {
     window.pqCurrentUser = user || null;
     renderUser(user);
+
+    if (user) {
+      await ensureUserDocument(user);
+    } else {
+      window.pqUserDocRef = null;
+    }
   });
 })();
