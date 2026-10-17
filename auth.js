@@ -136,9 +136,7 @@
         createdAt: user.metadata && user.metadata.creationTime
           ? firebase.firestore.Timestamp.fromDate(new Date(user.metadata.creationTime))
           : firebase.firestore.FieldValue.serverTimestamp(),
-        lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
-        plan: "free",
-        unlockedCount: 10
+        lastLogin: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
 
       window.pqUserDocRef = ref;

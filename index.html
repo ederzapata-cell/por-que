@@ -97,22 +97,26 @@
       <button class="close-paywall" id="closePaywall" aria-label="Cerrar">×</button>
       <div class="paywall-icon">✨</div>
       <h2 id="paywallTitle">¿Seguimos descubriendo?</h2>
-      <p>Ya viste tus 10 preguntas gratis. En la versión final aquí podrás desbloquear más para siempre.</p>
+      <p>Ya llegaste al límite de tu acceso actual.</p>
+
       <div class="plans">
-        <button class="plan">
-          <strong>50 preguntas</strong>
-          <span>próximamente</span>
+        <button class="plan" data-plan="100" data-url="https://checkout.wompi.co/l/m7CdM0">
+          <strong>100 preguntas</strong>
+          <span>$14.900 COP</span>
         </button>
-        <button class="plan">
-          <strong>200 preguntas</strong>
-          <span>próximamente</span>
+
+        <button class="plan" data-plan="300" data-url="https://checkout.wompi.co/l/hd2osZ">
+          <strong>300 preguntas</strong>
+          <span>$29.900 COP</span>
         </button>
-        <button class="plan featured">
-          <strong>Desbloquear todo</strong>
-          <span>próximamente</span>
+
+        <button class="plan featured" data-plan="all" data-url="https://checkout.wompi.co/l/gRfusB">
+          <strong>Completo · 1.000 preguntas</strong>
+          <span>$49.900 COP · Para siempre</span>
         </button>
       </div>
-      <p class="prototype-note">Prototipo: pagos y registro se conectarán después.</p>
+
+      <p class="prototype-note">Pago seguro con Wompi.</p>
     </div>
   </div>
 
@@ -124,60 +128,12 @@
   <script src="app.js"></script>
   <script src="auth.js"></script>
 
-  <div id="paywallModal" class="paywall-modal" aria-hidden="true">
-    <div class="paywall-card">
-      <button class="paywall-close" id="paywallClose" aria-label="Cerrar">×</button>
-      <h2>¿Seguimos descubriendo?</h2>
-      <p>Ya llegaste al límite de tu acceso actual.</p>
-
-      <div class="paywall-options">
-        <button class="paywall-option" data-plan="100">
-          <span>100 preguntas</span>
-          <strong>$14.900 COP</strong>
-        </button>
-
-        <button class="paywall-option" data-plan="300">
-          <span>300 preguntas</span>
-          <strong>$29.900 COP</strong>
-        </button>
-
-        <button class="paywall-option featured" data-plan="all">
-          <span>Completo · 1.000 preguntas</span>
-          <strong>$49.900 COP</strong>
-          <small>Para siempre</small>
-        </button>
-      </div>
-
-      <p class="paywall-note">Pago seguro con Wompi</p>
-    </div>
-  </div>
-
-
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      const modal = document.getElementById("paywallModal");
-      const closeBtn = document.getElementById("paywallClose");
-
-      if(closeBtn && modal){
-        closeBtn.addEventListener("click", () => modal.classList.remove("show"));
-        modal.addEventListener("click", (e) => {
-          if(e.target === modal) modal.classList.remove("show");
-        });
-      }
-
-      const wompiLinks = {
-        "100": "https://checkout.wompi.co/l/m7CdM0",
-        "300": "https://checkout.wompi.co/l/hd2osZ",
-        "all": "https://checkout.wompi.co/l/gRfusB"
-      };
-
-      document.querySelectorAll(".paywall-option").forEach(btn => {
+      document.querySelectorAll("#paywall .plan[data-url]").forEach(btn => {
         btn.addEventListener("click", () => {
-          const plan = btn.dataset.plan;
-          const url = wompiLinks[plan];
-          if(url){
-            window.location.href = url;
-          }
+          const url = btn.dataset.url;
+          if(url) window.location.href = url;
         });
       });
     });

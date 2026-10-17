@@ -59,8 +59,7 @@ function canOpenQuestion(questionId){
 }
 
 function showPaywall(){
-  const modal = document.getElementById("paywallModal");
-  if(modal) modal.classList.add("show");
+  if(paywall) paywall.classList.remove("hidden");
 }
 
 function markProgressUpdated(){
@@ -154,7 +153,8 @@ function render(){
   updateAccessUI();
   const list = currentList();
   mineCount.textContent = discovered.length;
-  counter.textContent = `${Math.min(discovered.length, FREE_LIMIT)} / ${FREE_LIMIT} gratis`;
+  const accessLabel = accessPlan === "free" ? "gratis" : "";
+  counter.textContent = `${Math.min(discovered.length, unlockedCount)} / ${unlockedCount} ${accessLabel}`.trim();
 
   if(activeTab==="mine" && !list.length){
     cardStack.classList.add("hidden");
@@ -184,14 +184,15 @@ function markDiscovered(q){
     save();
   }
   mineCount.textContent = discovered.length;
-  counter.textContent = `${Math.min(discovered.length, FREE_LIMIT)} / ${FREE_LIMIT} gratis`;
+  const accessLabel = accessPlan === "free" ? "gratis" : "";
+  counter.textContent = `${Math.min(discovered.length, unlockedCount)} / ${unlockedCount} ${accessLabel}`.trim();
 }
 function reveal(mode){
   const q = currentQuestion();
   if(!q) return;
 
-  if(activeTab==="explore" && !discovered.includes(q.id) && discovered.length >= FREE_LIMIT){
-    paywall.classList.remove("hidden");
+  if(activeTab==="explore" && !discovered.includes(q.id) && !canOpenQuestion(q.id)){
+    showPaywall();
     return;
   }
 
@@ -212,9 +213,9 @@ function nextQuestion(){
   if(!list.length) return;
 
   if(activeTab==="explore"){
-    const q = currentQuestion();
-    if(q && !discovered.includes(q.id) && discovered.length >= FREE_LIMIT){
-      paywall.classList.remove("hidden");
+    // No permitimos avanzar más allá del acceso comprado.
+    if(currentIndex + 1 >= unlockedCount){
+      showPaywall();
       return;
     }
 
@@ -372,7 +373,8 @@ window.pqApplyCloudProgress = function(cloud){
     render();
   } else {
     mineCount.textContent = discovered.length;
-    counter.textContent = `${Math.min(discovered.length, FREE_LIMIT)} / ${FREE_LIMIT} gratis`;
+    const accessLabel = accessPlan === "free" ? "gratis" : "";
+  counter.textContent = `${Math.min(discovered.length, unlockedCount)} / ${unlockedCount} ${accessLabel}`.trim();
   }
 };
 
