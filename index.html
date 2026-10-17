@@ -151,14 +151,15 @@
             btn.disabled = true;
             btn.innerHTML = "<strong>Preparando pago...</strong>";
 
+            const idToken = await user.getIdToken(true);
+
             const response = await fetch("/.netlify/functions/create-checkout", {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                plan,
-                uid: user.uid,
-                email: user.email || ""
-              })
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${idToken}`
+              },
+              body: JSON.stringify({ plan })
             });
 
             const data = await response.json();
