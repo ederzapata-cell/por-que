@@ -123,5 +123,55 @@
   <script src="questions.js"></script>
   <script src="app.js"></script>
   <script src="auth.js"></script>
+
+  <div id="paywallModal" class="paywall-modal" aria-hidden="true">
+    <div class="paywall-card">
+      <button class="paywall-close" id="paywallClose" aria-label="Cerrar">×</button>
+      <h2>¿Seguimos descubriendo?</h2>
+      <p>Ya llegaste al límite de tu acceso actual.</p>
+
+      <div class="paywall-options">
+        <button class="paywall-option" data-plan="100">
+          <span>100 preguntas</span>
+          <strong>$14.900 COP</strong>
+        </button>
+
+        <button class="paywall-option" data-plan="300">
+          <span>300 preguntas</span>
+          <strong>$29.900 COP</strong>
+        </button>
+
+        <button class="paywall-option featured" data-plan="all">
+          <span>Completo · 1.000 preguntas</span>
+          <strong>$49.900 COP</strong>
+          <small>Para siempre</small>
+        </button>
+      </div>
+
+      <p class="paywall-note">Pagos con Wompi · Próximamente</p>
+    </div>
+  </div>
+
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const modal = document.getElementById("paywallModal");
+      const closeBtn = document.getElementById("paywallClose");
+
+      if(closeBtn && modal){
+        closeBtn.addEventListener("click", () => modal.classList.remove("show"));
+        modal.addEventListener("click", (e) => {
+          if(e.target === modal) modal.classList.remove("show");
+        });
+      }
+
+      document.querySelectorAll(".paywall-option").forEach(btn => {
+        btn.addEventListener("click", () => {
+          alert("Este paquete se conectará a Wompi en el siguiente paso.");
+        });
+      });
+    });
+  </script>
+
 </body>
 </html>

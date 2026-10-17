@@ -227,3 +227,106 @@ text-wrap:pretty
   .top-actions{gap:6px}
   .account-button{width:38px;height:38px}
 }
+
+
+.access-badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:.45rem .8rem;
+  border-radius:999px;
+  font-size:.82rem;
+  font-weight:800;
+  background:#FFF1C4;
+  color:#10245B;
+  margin-right:.5rem;
+}
+
+.paywall-modal{
+  position:fixed;
+  inset:0;
+  background:rgba(16,36,91,.32);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  z-index:9999;
+}
+
+.paywall-modal.show{
+  display:flex;
+}
+
+.paywall-card{
+  width:min(92vw, 440px);
+  background:#FFF9F3;
+  border-radius:28px;
+  padding:28px;
+  box-shadow:0 24px 70px rgba(16,36,91,.22);
+  position:relative;
+  text-align:center;
+}
+
+.paywall-card h2{
+  margin:0 0 8px;
+  font-size:1.75rem;
+  color:#10245B;
+}
+
+.paywall-card p{
+  color:#4B5879;
+}
+
+.paywall-close{
+  position:absolute;
+  right:16px;
+  top:14px;
+  border:0;
+  background:transparent;
+  font-size:1.8rem;
+  cursor:pointer;
+  color:#10245B;
+}
+
+.paywall-options{
+  display:grid;
+  gap:12px;
+  margin:22px 0 12px;
+}
+
+.paywall-option{
+  border:0;
+  border-radius:20px;
+  padding:16px 18px;
+  background:#FFFFFF;
+  box-shadow:0 8px 24px rgba(16,36,91,.08);
+  display:grid;
+  gap:4px;
+  cursor:pointer;
+  color:#10245B;
+  text-align:left;
+}
+
+.paywall-option span{
+  font-weight:800;
+  font-size:1rem;
+}
+
+.paywall-option strong{
+  font-size:1.18rem;
+}
+
+.paywall-option small{
+  font-weight:700;
+  opacity:.8;
+}
+
+.paywall-option.featured{
+  background:#24276F;
+  color:#FFFFFF;
+}
+
+.paywall-note{
+  font-size:.82rem;
+  margin-top:14px;
+}

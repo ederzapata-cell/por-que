@@ -19,6 +19,50 @@ let currentIndex = Number(localStorage.getItem("pq_current_index") || 0);
 let currentMode = null;
 let cloudSyncTimer = null;
 
+let accessPlan = "free";
+let unlockedCount = 10;
+
+const ACCESS_LIMITS = {
+  free: 10,
+  "100": 100,
+  "300": 300,
+  all: 1000
+};
+
+window.pqSetAccessPlan = function(plan){
+  const normalized = Object.prototype.hasOwnProperty.call(ACCESS_LIMITS, plan) ? plan : "free";
+  accessPlan = normalized;
+  unlockedCount = ACCESS_LIMITS[normalized];
+  localStorage.setItem("pq_access_plan", accessPlan);
+  localStorage.setItem("pq_unlocked_count", String(unlockedCount));
+  updateAccessUI();
+};
+
+function updateAccessUI(){
+  const badge = document.getElementById("accessBadge");
+  if(!badge) return;
+
+  const labels = {
+    free: "10 gratis",
+    "100": "100 preguntas",
+    "300": "300 preguntas",
+    all: "Completo"
+  };
+
+  badge.textContent = labels[accessPlan] || "10 gratis";
+}
+
+function canOpenQuestion(questionId){
+  const idx = exploreOrder.indexOf(questionId);
+  if(idx < 0) return true;
+  return idx < unlockedCount;
+}
+
+function showPaywall(){
+  const modal = document.getElementById("paywallModal");
+  if(modal) modal.classList.add("show");
+}
+
 function markProgressUpdated(){
   localStorage.setItem("pq_progress_updated_at", String(Date.now()));
 }
@@ -31,6 +75,12 @@ function scheduleCloudSync(){
       window.pqSyncProgressToCloud();
     }
   }, 350);
+}
+
+const savedPlan = localStorage.getItem("pq_access_plan") || "free";
+if(Object.prototype.hasOwnProperty.call(ACCESS_LIMITS, savedPlan)){
+  accessPlan = savedPlan;
+  unlockedCount = ACCESS_LIMITS[savedPlan];
 }
 
 const shuffled = loadOrCreateOrder();
@@ -101,6 +151,7 @@ function save(){
   scheduleCloudSync();
 }
 function render(){
+  updateAccessUI();
   const list = currentList();
   mineCount.textContent = discovered.length;
   counter.textContent = `${Math.min(discovered.length, FREE_LIMIT)} / ${FREE_LIMIT} gratis`;

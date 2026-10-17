@@ -78,6 +78,11 @@
       }
 
       const data = snap.data() || {};
+
+      if(typeof window.pqSetAccessPlan === "function"){
+        window.pqSetAccessPlan(data.plan || "free");
+      }
+
       const local = window.pqExportProgress();
 
       const cloudHasDiscovered =
@@ -132,7 +137,8 @@
           ? firebase.firestore.Timestamp.fromDate(new Date(user.metadata.creationTime))
           : firebase.firestore.FieldValue.serverTimestamp(),
         lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
-        plan: "free"
+        plan: "free",
+        unlockedCount: 10
       }, { merge: true });
 
       window.pqUserDocRef = ref;
