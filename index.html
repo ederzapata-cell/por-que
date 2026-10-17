@@ -100,17 +100,17 @@
       <p>Ya llegaste al límite de tu acceso actual.</p>
 
       <div class="plans">
-        <button class="plan" data-plan="100" data-url="https://checkout.wompi.co/l/m7CdM0">
+        <button class="plan" data-plan="100">
           <strong>100 preguntas</strong>
           <span>$14.900 COP</span>
         </button>
 
-        <button class="plan" data-plan="300" data-url="https://checkout.wompi.co/l/hd2osZ">
+        <button class="plan" data-plan="300">
           <strong>300 preguntas</strong>
           <span>$29.900 COP</span>
         </button>
 
-        <button class="plan featured" data-plan="all" data-url="https://checkout.wompi.co/l/gRfusB">
+        <button class="plan featured" data-plan="all">
           <strong>Completo · 1.000 preguntas</strong>
           <span>$49.900 COP · Para siempre</span>
         </button>
@@ -130,10 +130,63 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      document.querySelectorAll("#paywall .plan[data-url]").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const url = btn.dataset.url;
-          if(url) window.location.href = url;
+      document.querySelectorAll("#paywall .plan[data-plan]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const user = window.pqFirebaseAuth && window.pqFirebaseAuth.currentUser;
+
+          if(!user){
+            const paywall = document.getElementById("paywall");
+            if(paywall) paywall.classList.add("hidden");
+
+            const authModal = document.getElementById("authModal");
+            if(authModal) authModal.classList.add("show");
+
+            return;
+          }
+
+          const plan = btn.dataset.plan;
+          const originalText = btn.innerHTML;
+
+          try {
+            btn.disabled = true;
+            btn.innerHTML = "<strong>Preparando pago...</strong>";
+
+            const response = await fetch("/.netlify/functions/create-checkout", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                plan,
+                uid: user.uid,
+                email: user.email || ""
+              })
+            });
+
+            const data = await response.json();
+
+            if(!response.ok){
+              throw new Error(data.error || "No se pudo preparar el pago.");
+            }
+
+            const params = new URLSearchParams({
+              "public-key": data.publicKey,
+              "currency": data.currency,
+              "amount-in-cents": String(data.amountInCents),
+              "reference": data.reference,
+              "signature:integrity": data.signature,
+              "redirect-url": data.redirectUrl
+            });
+
+            if(data.customerEmail){
+              params.set("customer-data:email", data.customerEmail);
+            }
+
+            window.location.href = `https://checkout.wompi.co/p/?${params.toString()}`;
+          } catch(error) {
+            console.error(error);
+            alert("No pudimos preparar el pago. Intenta de nuevo.");
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+          }
         });
       });
     });
