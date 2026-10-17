@@ -148,7 +148,7 @@
         </button>
       </div>
 
-      <p class="paywall-note">Pagos con Wompi · Próximamente</p>
+      <p class="paywall-note">Pago seguro con Wompi</p>
     </div>
   </div>
 
@@ -165,9 +165,19 @@
         });
       }
 
+      const wompiLinks = {
+        "100": "https://checkout.wompi.co/l/m7CdM0",
+        "300": "https://checkout.wompi.co/l/hd2osZ",
+        "all": "https://checkout.wompi.co/l/gRfusB"
+      };
+
       document.querySelectorAll(".paywall-option").forEach(btn => {
         btn.addEventListener("click", () => {
-          alert("Este paquete se conectará a Wompi en el siguiente paso.");
+          const plan = btn.dataset.plan;
+          const url = wompiLinks[plan];
+          if(url){
+            window.location.href = url;
+          }
         });
       });
     });
