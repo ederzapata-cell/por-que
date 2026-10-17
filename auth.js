@@ -35,39 +35,37 @@
   }
 
   async function ensureUserDocument(user) {
-    if (!user || !db) return;
+    if (!user || !db) return false;
 
     const ref = db.collection("users").doc(user.uid);
 
     try {
-      const snap = await ref.get();
-
-      if (!snap.exists) {
-        await ref.set({
-          uid: user.uid,
-          name: user.displayName || "",
-          email: user.email || "",
-          photoURL: user.photoURL || "",
-          provider: "google",
-          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-          lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
-          discoveredQuestions: [],
-          unlockedQuestions: [],
-          currentIndex: Number(localStorage.getItem("pq_current_index") || 0),
-          plan: "free"
-        });
-      } else {
-        await ref.set({
-          name: user.displayName || "",
-          email: user.email || "",
-          photoURL: user.photoURL || "",
-          lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
-      }
+      await ref.set({
+        uid: user.uid,
+        name: user.displayName || "",
+        email: user.email || "",
+        photoURL: user.photoURL || "",
+        provider: "google",
+        createdAt: user.metadata && user.metadata.creationTime
+          ? firebase.firestore.Timestamp.fromDate(new Date(user.metadata.creationTime))
+          : firebase.firestore.FieldValue.serverTimestamp(),
+        lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+        currentIndex: Number(localStorage.getItem("pq_current_index") || 0),
+        plan: "free"
+      }, { merge: true });
 
       window.pqUserDocRef = ref;
+      window.pqFirestoreUserSaved = true;
+      return true;
     } catch (error) {
-      console.error("No se pudo crear/actualizar el usuario en Firestore:", error);
+      console.error("No se pudo guardar el usuario en Firestore:", error);
+      window.pqFirestoreUserSaved = false;
+
+      if (authStatus) {
+        authStatus.textContent = `Sesión iniciada, pero Firestore falló: ${error.code || error.message}`;
+        authStatus.classList.add("error");
+      }
+      return false;
     }
   }
 
@@ -142,28 +140,42 @@
   });
 
   // On mobile, Google returns to this page after redirect.
-  auth.getRedirectResult().catch((error) => {
-    console.error(error);
-    const friendly = {
-      "auth/unauthorized-domain": "Este dominio todavía no está autorizado en Firebase.",
-      "auth/network-request-failed": "Hubo un problema de conexión durante el acceso con Google.",
-      "auth/operation-not-allowed": "Google Sign-In no está habilitado en Firebase."
-    };
+  auth.getRedirectResult()
+    .then(async (result) => {
+      if (result && result.user) {
+        await ensureUserDocument(result.user);
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+      const friendly = {
+        "auth/unauthorized-domain": "Este dominio todavía no está autorizado en Firebase.",
+        "auth/network-request-failed": "Hubo un problema de conexión durante el acceso con Google.",
+        "auth/operation-not-allowed": "Google Sign-In no está habilitado en Firebase."
+      };
 
-    authStatus.textContent =
-      friendly[error.code] || `No se pudo iniciar sesión: ${error.message}`;
-    authStatus.classList.add("error");
-    openAuth();
-  });
+      authStatus.textContent =
+        friendly[error.code] || `No se pudo iniciar sesión: ${error.message}`;
+      authStatus.classList.add("error");
+      openAuth();
+    });
 
   auth.onAuthStateChanged(async (user) => {
     window.pqCurrentUser = user || null;
     renderUser(user);
 
     if (user) {
-      await ensureUserDocument(user);
+      const saved = await ensureUserDocument(user);
+
+      if (saved) {
+        const successBox = document.querySelector(".auth-success");
+        if (successBox) {
+          successBox.textContent = "Cuenta conectada y guardada en Firestore.";
+        }
+      }
     } else {
       window.pqUserDocRef = null;
+      window.pqFirestoreUserSaved = false;
     }
   });
 })();
