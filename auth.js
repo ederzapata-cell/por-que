@@ -34,6 +34,84 @@
     return value.trim().charAt(0).toUpperCase() || "G";
   }
 
+  function timestampToMillis(value){
+    if(!value) return 0;
+    if(typeof value.toMillis === "function") return value.toMillis();
+    if(value.seconds) return value.seconds * 1000;
+    return 0;
+  }
+
+  async function syncProgressToCloud(){
+    const user = auth.currentUser;
+    if(!user || !db || typeof window.pqExportProgress !== "function") return false;
+
+    const progress = window.pqExportProgress();
+    const ref = db.collection("users").doc(user.uid);
+
+    try {
+      await ref.set({
+        discoveredQuestions: progress.discoveredQuestions,
+        questionOrder: progress.questionOrder,
+        currentIndex: progress.currentIndex,
+        progressUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+
+      return true;
+    } catch(error) {
+      console.error("No se pudo sincronizar el progreso:", error);
+      return false;
+    }
+  }
+
+  window.pqSyncProgressToCloud = syncProgressToCloud;
+
+  async function loadAndMergeProgress(user){
+    if(!user || !db || typeof window.pqExportProgress !== "function") return;
+
+    const ref = db.collection("users").doc(user.uid);
+
+    try {
+      const snap = await ref.get();
+      if(!snap.exists){
+        await syncProgressToCloud();
+        return;
+      }
+
+      const data = snap.data() || {};
+      const local = window.pqExportProgress();
+
+      const cloudMillis = timestampToMillis(data.progressUpdatedAt);
+      const localMillis = Number(local.localUpdatedAt || 0);
+
+      const cloudHasValidOrder =
+        Array.isArray(data.questionOrder) &&
+        data.questionOrder.length === (window.QUESTIONS || []).length;
+
+      // If cloud already has a real progress record and is at least as recent,
+      // use its sequence/position. Discovered questions are always merged.
+      if(cloudHasValidOrder && cloudMillis >= localMillis){
+        window.pqApplyCloudProgress({
+          discoveredQuestions: data.discoveredQuestions || [],
+          questionOrder: data.questionOrder,
+          currentIndex: data.currentIndex,
+          progressUpdatedAtMillis: cloudMillis
+        });
+
+        // pqApplyCloudProgress merges local discoveries too, so write the union back.
+        await syncProgressToCloud();
+      } else {
+        // Local device is newer (or cloud has no order yet). Preserve any
+        // discoveries from cloud, then upload this device's current sequence.
+        window.pqApplyCloudProgress({
+          discoveredQuestions: data.discoveredQuestions || []
+        });
+        await syncProgressToCloud();
+      }
+    } catch(error) {
+      console.error("No se pudo cargar el progreso desde Firestore:", error);
+    }
+  }
+
   async function ensureUserDocument(user) {
     if (!user || !db) return false;
 
@@ -50,7 +128,6 @@
           ? firebase.firestore.Timestamp.fromDate(new Date(user.metadata.creationTime))
           : firebase.firestore.FieldValue.serverTimestamp(),
         lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
-        currentIndex: Number(localStorage.getItem("pq_current_index") || 0),
         plan: "free"
       }, { merge: true });
 
@@ -150,9 +227,11 @@
       const saved = await ensureUserDocument(user);
 
       if (saved) {
+        await loadAndMergeProgress(user);
+
         const successBox = document.querySelector(".auth-success");
         if (successBox) {
-          successBox.textContent = "Cuenta conectada y guardada en Firestore.";
+          successBox.textContent = "Cuenta conectada y progreso sincronizado.";
         }
       }
     } else {

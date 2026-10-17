@@ -17,6 +17,21 @@ const backToQuestion = document.getElementById("backToQuestion");
 let activeTab = "explore";
 let currentIndex = Number(localStorage.getItem("pq_current_index") || 0);
 let currentMode = null;
+let cloudSyncTimer = null;
+
+function markProgressUpdated(){
+  localStorage.setItem("pq_progress_updated_at", String(Date.now()));
+}
+
+function scheduleCloudSync(){
+  markProgressUpdated();
+  clearTimeout(cloudSyncTimer);
+  cloudSyncTimer = setTimeout(()=>{
+    if(typeof window.pqSyncProgressToCloud === "function"){
+      window.pqSyncProgressToCloud();
+    }
+  }, 350);
+}
 
 const shuffled = loadOrCreateOrder();
 let exploreOrder = shuffled;
@@ -51,6 +66,7 @@ function loadOrCreateOrder(){
 function getQuestionById(id){ return QUESTIONS.find(q=>q.id===id); }
 function saveCurrentIndex(){
   localStorage.setItem("pq_current_index", String(currentIndex));
+  scheduleCloudSync();
 }
 
 function createNewCycle(previousLastId){
@@ -82,6 +98,7 @@ function currentQuestion(){
 function save(){
   localStorage.setItem("pq_discovered", JSON.stringify(discovered));
   localStorage.setItem("pq_history", JSON.stringify(history));
+  scheduleCloudSync();
 }
 function render(){
   const list = currentList();
@@ -249,5 +266,63 @@ card.addEventListener("pointerdown", e=>{
 card.addEventListener("pointermove", e=>pointerMove(e.clientX));
 card.addEventListener("pointerup", pointerUp);
 card.addEventListener("pointercancel", pointerUp);
+
+
+// ---------- Firestore progress sync API ----------
+window.pqExportProgress = function(){
+  return {
+    discoveredQuestions: [...new Set(discovered)],
+    questionOrder: [...exploreOrder],
+    currentIndex: Number(localStorage.getItem("pq_current_index") || currentIndex || 0),
+    localUpdatedAt: Number(localStorage.getItem("pq_progress_updated_at") || 0)
+  };
+};
+
+window.pqApplyCloudProgress = function(cloud){
+  if(!cloud) return;
+
+  const allIds = new Set(QUESTIONS.map(q => q.id));
+
+  // Never lose questions already discovered on this device.
+  const cloudDiscovered = Array.isArray(cloud.discoveredQuestions)
+    ? cloud.discoveredQuestions.filter(id => allIds.has(id))
+    : [];
+
+  discovered = [...new Set([...discovered, ...cloudDiscovered])];
+  localStorage.setItem("pq_discovered", JSON.stringify(discovered));
+
+  // Preserve history enough for the current app behavior.
+  history = [...new Set([...history, ...discovered])];
+  localStorage.setItem("pq_history", JSON.stringify(history));
+
+  // A cloud order is only accepted if it contains the full current bank once.
+  if(Array.isArray(cloud.questionOrder)){
+    const validOrder = [...new Set(cloud.questionOrder)].filter(id => allIds.has(id));
+    if(validOrder.length === QUESTIONS.length){
+      exploreOrder = validOrder;
+      localStorage.setItem("pq_order", JSON.stringify(exploreOrder));
+    }
+  }
+
+  let cloudIndex = Number(cloud.currentIndex);
+  if(Number.isFinite(cloudIndex)){
+    cloudIndex = Math.max(0, Math.min(cloudIndex, exploreOrder.length - 1));
+    currentIndex = cloudIndex;
+    localStorage.setItem("pq_current_index", String(currentIndex));
+  }
+
+  if(cloud.progressUpdatedAtMillis){
+    localStorage.setItem("pq_progress_updated_at", String(cloud.progressUpdatedAtMillis));
+  }
+
+  if(activeTab === "explore"){
+    render();
+  } else {
+    mineCount.textContent = discovered.length;
+    counter.textContent = `${Math.min(discovered.length, FREE_LIMIT)} / ${FREE_LIMIT} gratis`;
+  }
+};
+
+window.pqRenderProgress = render;
 
 render();
