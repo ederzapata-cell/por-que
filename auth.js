@@ -108,16 +108,13 @@
     try {
       const provider = new firebase.auth.GoogleAuthProvider();
 
-      const isMobile =
-        /Android|iPhone|iPad|iPod|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-        window.matchMedia("(max-width: 768px)").matches;
+      const result = await auth.signInWithPopup(provider);
 
-      if (isMobile) {
-        await auth.signInWithRedirect(provider);
-        return;
+      if (result && result.user) {
+        // Ensure Auth has a fresh token before the Firestore write.
+        await result.user.getIdToken(true);
+        await ensureUserDocument(result.user);
       }
-
-      await auth.signInWithPopup(provider);
       authStatus.textContent = "";
     } catch (error) {
       console.error(error);
@@ -139,32 +136,17 @@
     closeAuthModal();
   });
 
-  // On mobile, Google returns to this page after redirect.
-  auth.getRedirectResult()
-    .then(async (result) => {
-      if (result && result.user) {
-        await ensureUserDocument(result.user);
-      }
-    })
-    .catch((error) => {
-      console.error(error);
-      const friendly = {
-        "auth/unauthorized-domain": "Este dominio todavía no está autorizado en Firebase.",
-        "auth/network-request-failed": "Hubo un problema de conexión durante el acceso con Google.",
-        "auth/operation-not-allowed": "Google Sign-In no está habilitado en Firebase."
-      };
-
-      authStatus.textContent =
-        friendly[error.code] || `No se pudo iniciar sesión: ${error.message}`;
-      authStatus.classList.add("error");
-      openAuth();
-    });
-
   auth.onAuthStateChanged(async (user) => {
     window.pqCurrentUser = user || null;
     renderUser(user);
 
     if (user) {
+      try {
+        await user.getIdToken(true);
+      } catch (tokenError) {
+        console.error("No se pudo refrescar el token de Firebase Auth:", tokenError);
+      }
+
       const saved = await ensureUserDocument(user);
 
       if (saved) {
