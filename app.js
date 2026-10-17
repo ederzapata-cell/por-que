@@ -283,17 +283,19 @@ window.pqApplyCloudProgress = function(cloud){
 
   const allIds = new Set(QUESTIONS.map(q => q.id));
 
-  // Never lose questions already discovered on this device.
   const cloudDiscovered = Array.isArray(cloud.discoveredQuestions)
-    ? cloud.discoveredQuestions.filter(id => allIds.has(id))
-    : [];
+    ? [...new Set(cloud.discoveredQuestions.filter(id => allIds.has(id)))]
+    : null;
 
-  discovered = [...new Set([...discovered, ...cloudDiscovered])];
-  localStorage.setItem("pq_discovered", JSON.stringify(discovered));
+  if(cloudDiscovered){
+    // Once an account has cloud progress, Firestore is authoritative.
+    // This guarantees identical "Mis preguntas" content AND order on every device.
+    discovered = cloudDiscovered;
+    localStorage.setItem("pq_discovered", JSON.stringify(discovered));
 
-  // Preserve history enough for the current app behavior.
-  history = [...new Set([...history, ...discovered])];
-  localStorage.setItem("pq_history", JSON.stringify(history));
+    history = [...discovered];
+    localStorage.setItem("pq_history", JSON.stringify(history));
+  }
 
   // A cloud order is only accepted if it contains the full current bank once.
   if(Array.isArray(cloud.questionOrder)){

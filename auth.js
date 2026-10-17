@@ -80,31 +80,35 @@
       const data = snap.data() || {};
       const local = window.pqExportProgress();
 
-      const cloudMillis = timestampToMillis(data.progressUpdatedAt);
-      const localMillis = Number(local.localUpdatedAt || 0);
+      const cloudHasDiscovered =
+        Array.isArray(data.discoveredQuestions);
 
       const cloudHasValidOrder =
         Array.isArray(data.questionOrder) &&
         data.questionOrder.length === (window.QUESTIONS || []).length;
 
-      // If cloud already has a real progress record and is at least as recent,
-      // use its sequence/position. Discovered questions are always merged.
-      if(cloudHasValidOrder && cloudMillis >= localMillis){
-        window.pqApplyCloudProgress({
-          discoveredQuestions: data.discoveredQuestions || [],
-          questionOrder: data.questionOrder,
-          currentIndex: data.currentIndex,
-          progressUpdatedAtMillis: cloudMillis
-        });
-
-        // pqApplyCloudProgress merges local discoveries too, so write the union back.
+      // FIRST MIGRATION ONLY:
+      // If this account has never stored discoveredQuestions, preserve the
+      // user's pre-login local discoveries by uploading them once.
+      if(!cloudHasDiscovered){
         await syncProgressToCloud();
-      } else {
-        // Local device is newer (or cloud has no order yet). Preserve any
-        // discoveries from cloud, then upload this device's current sequence.
-        window.pqApplyCloudProgress({
-          discoveredQuestions: data.discoveredQuestions || []
-        });
+        return;
+      }
+
+      // From this point onward Firestore is authoritative for the account.
+      // All devices receive the exact same discovered list, in the same order.
+      window.pqApplyCloudProgress({
+        discoveredQuestions: data.discoveredQuestions,
+        questionOrder: cloudHasValidOrder ? data.questionOrder : null,
+        currentIndex: Number.isFinite(Number(data.currentIndex))
+          ? Number(data.currentIndex)
+          : 0,
+        progressUpdatedAtMillis: timestampToMillis(data.progressUpdatedAt)
+      });
+
+      // If cloud didn't yet have a valid 1000-question order, keep the local
+      // order but upload it after applying the authoritative discovered list.
+      if(!cloudHasValidOrder){
         await syncProgressToCloud();
       }
     } catch(error) {
