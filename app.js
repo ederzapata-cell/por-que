@@ -15,7 +15,7 @@ const closePaywall = document.getElementById("closePaywall");
 const backToQuestion = document.getElementById("backToQuestion");
 
 let activeTab = "explore";
-let currentIndex = 0;
+let currentIndex = Number(localStorage.getItem("pq_current_index") || 0);
 let currentMode = null;
 
 const shuffled = loadOrCreateOrder();
@@ -25,19 +25,49 @@ let discovered = JSON.parse(localStorage.getItem("pq_discovered") || "[]");
 let history = JSON.parse(localStorage.getItem("pq_history") || "[]");
 
 function shuffle(arr){
-  return [...arr].sort(()=>Math.random()-.5);
+  const copy = [...arr];
+  for(let i = copy.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
 }
 function loadOrCreateOrder(){
+  const allIds = QUESTIONS.map(q => q.id);
   const stored = JSON.parse(localStorage.getItem("pq_order") || "null");
-  if(stored && stored.length === QUESTIONS.length) return stored;
 
-  // Aleatoriedad total: todas las preguntas pertenecen al mismo banco.
-  // Las primeras 10 gratuitas pueden salir de cualquiera de las 100.
-  const order = shuffle(QUESTIONS).map(q=>q.id);
+  if(Array.isArray(stored)){
+    const uniqueValid = [...new Set(stored)].filter(id => allIds.includes(id));
+    if(uniqueValid.length === allIds.length){
+      return uniqueValid;
+    }
+  }
+
+  const order = shuffle(allIds);
   localStorage.setItem("pq_order", JSON.stringify(order));
+  localStorage.setItem("pq_current_index", "0");
   return order;
 }
 function getQuestionById(id){ return QUESTIONS.find(q=>q.id===id); }
+function saveCurrentIndex(){
+  localStorage.setItem("pq_current_index", String(currentIndex));
+}
+
+function createNewCycle(previousLastId){
+  let nextOrder = shuffle(QUESTIONS.map(q => q.id));
+
+  // Evita que la última pregunta de una ronda sea inmediatamente
+  // la primera de la siguiente.
+  if(nextOrder.length > 1 && nextOrder[0] === previousLastId){
+    [nextOrder[0], nextOrder[1]] = [nextOrder[1], nextOrder[0]];
+  }
+
+  exploreOrder = nextOrder;
+  localStorage.setItem("pq_order", JSON.stringify(exploreOrder));
+  currentIndex = 0;
+  saveCurrentIndex();
+}
+
 function currentList(){
   if(activeTab === "mine"){
     return discovered;
@@ -119,15 +149,33 @@ function nextQuestion(){
       paywall.classList.remove("hidden");
       return;
     }
+
+    // No repetimos ninguna pregunta durante la ronda completa.
+    if(currentIndex >= list.length - 1){
+      const previousLastId = list[list.length - 1];
+      createNewCycle(previousLastId);
+      animateSwitch(-1);
+      return;
+    }
+  } else if(currentIndex >= list.length - 1){
+    currentIndex = 0;
+    animateSwitch(-1);
+    return;
   }
-  currentIndex = (currentIndex + 1) % list.length;
+
+  currentIndex += 1;
+  saveCurrentIndex();
   animateSwitch(-1);
 }
 function prevQuestion(){
   const list = currentList();
   if(!list.length) return;
-  currentIndex = (currentIndex - 1 + list.length) % list.length;
-  animateSwitch(1);
+
+  if(currentIndex > 0){
+    currentIndex -= 1;
+    if(activeTab === "explore") saveCurrentIndex();
+    animateSwitch(1);
+  }
 }
 function animateSwitch(direction){
   card.style.transform = `translateX(${direction * 34}px) rotate(${direction * 2}deg)`;
@@ -160,7 +208,12 @@ document.querySelectorAll(".tab").forEach(tab=>{
     document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
     tab.classList.add("active");
     activeTab = tab.dataset.tab;
-    currentIndex = 0;
+    if(activeTab === "mine"){
+      currentIndex = 0;
+    } else {
+      currentIndex = Number(localStorage.getItem("pq_current_index") || 0);
+      if(currentIndex >= exploreOrder.length) currentIndex = 0;
+    }
     render();
   });
 });
