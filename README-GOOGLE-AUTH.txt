@@ -1,27 +1,16 @@
-¿POR QUÉ? — PILOTO GOOGLE SIGN-IN
+¿POR QUÉ? — GOOGLE SIGN-IN: ESCRITORIO + CELULAR
 
-Archivos nuevos:
-- firebase-config.js
-- auth.js
+Comportamiento:
+- Computador: Google Sign-In usa popup.
+- Celular/tablet: Google Sign-In usa redirect.
+- En móvil, Google abre el flujo de acceso y luego vuelve automáticamente a la app.
+- Mantiene las 10 preguntas gratis sin exigir cuenta.
+- Todavía no guarda progreso ni compras en Firestore.
 
-Archivos actualizados:
-- index.html
-- styles.css
-- app.js (mantiene navegación sin repeticiones)
-- questions.js (1.000 preguntas)
-
-Qué hace:
-- Mantiene las 10 preguntas gratis SIN exigir cuenta.
-- Añade un botón de cuenta arriba a la derecha.
-- Abre un modal con “Continuar con Google”.
-- Permite elegir cuenta Google.
-- Mantiene la sesión iniciada mediante Firebase Authentication.
-- Permite cerrar sesión.
-- Todavía NO guarda progreso ni compras en Firestore.
-
-ANTES DE PROBAR EN NETLIFY:
+IMPORTANTE:
 Firebase Console → Authentication → Settings → Authorized domains
-Añadir:
-por-que-app.netlify.app
+debe contener:
+porque.tekkify.co
 
-Luego subir estos archivos reemplazando los actuales.
+Para actualizar:
+Reemplaza todos los archivos del ZIP en el repo, sin borrar archivos extra que no estén incluidos.

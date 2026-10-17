@@ -71,7 +71,16 @@
 
     try {
       const provider = new firebase.auth.GoogleAuthProvider();
-      provider.setCustomParameters({ prompt: "select_account" });
+
+      const isMobile =
+        /Android|iPhone|iPad|iPod|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+        window.matchMedia("(max-width: 768px)").matches;
+
+      if (isMobile) {
+        await auth.signInWithRedirect(provider);
+        return;
+      }
+
       await auth.signInWithPopup(provider);
       authStatus.textContent = "";
     } catch (error) {
@@ -92,6 +101,21 @@
   signOutButton.addEventListener("click", async () => {
     await auth.signOut();
     closeAuthModal();
+  });
+
+  // On mobile, Google returns to this page after redirect.
+  auth.getRedirectResult().catch((error) => {
+    console.error(error);
+    const friendly = {
+      "auth/unauthorized-domain": "Este dominio todavía no está autorizado en Firebase.",
+      "auth/network-request-failed": "Hubo un problema de conexión durante el acceso con Google.",
+      "auth/operation-not-allowed": "Google Sign-In no está habilitado en Firebase."
+    };
+
+    authStatus.textContent =
+      friendly[error.code] || `No se pudo iniciar sesión: ${error.message}`;
+    authStatus.classList.add("error");
+    openAuth();
   });
 
   auth.onAuthStateChanged((user) => {
