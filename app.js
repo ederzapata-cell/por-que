@@ -69,27 +69,31 @@ async function pqTrackEvent(eventName, extra = {}){
     localStorage.setItem(key, JSON.stringify(events.slice(-100)));
 
     // Persist every funnel event anonymously; sign-in is NOT required.
-    if(typeof db !== "undefined"){
-      const eventRef = db.collection("funnel_events").doc();
+    // Get Firestore directly from Firebase instead of depending on a global `db`.
+    if(typeof firebase !== "undefined" && typeof firebase.firestore === "function"){
+      const trackerDb = firebase.firestore();
+      const currentUser = (firebase.auth && firebase.auth().currentUser)
+        ? firebase.auth().currentUser
+        : null;
+
+      const eventRef = trackerDb.collection("funnel_events").doc();
       await eventRef.set({
         ...payload,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        userId: (firebase.auth && firebase.auth().currentUser)
-          ? firebase.auth().currentUser.uid
-          : null
+        userId: currentUser ? currentUser.uid : null
       });
 
       // Maintain one lightweight visitor record for attribution and later linking.
-      await db.collection("visitors").doc(visitorId).set({
+      await trackerDb.collection("visitors").doc(visitorId).set({
         visitorId,
         firstSource: attribution?.first || null,
         lastSource: attribution?.last || null,
         lastEvent: eventName,
         lastSeenAt: firebase.firestore.FieldValue.serverTimestamp(),
-        userId: (firebase.auth && firebase.auth().currentUser)
-          ? firebase.auth().currentUser.uid
-          : null
+        userId: currentUser ? currentUser.uid : null
       }, { merge: true });
+    }else{
+      console.warn("Funnel analytics: Firebase Firestore is not available.");
     }
   }catch(err){
     console.warn("Funnel analytics:", err);
