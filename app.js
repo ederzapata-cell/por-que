@@ -418,6 +418,18 @@ document.querySelectorAll(".tab").forEach(tab=>{
     render();
   });
 });
+// Funnel: record a real plan click once per plan per browser session.
+// This listener only measures the click; it does not alter auth or checkout behavior.
+document.querySelectorAll("#paywall .plan[data-plan]").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    const plan = btn.dataset.plan;
+    const key = `pq_checkout_click_${plan}`;
+    if(sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, "1");
+    pqTrackEvent("checkout_click", { plan });
+  });
+});
+
 closePaywall.addEventListener("click", ()=>paywall.classList.add("hidden"));
 paywall.addEventListener("click", e=>{
   if(e.target===paywall) paywall.classList.add("hidden");
