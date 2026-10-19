@@ -249,6 +249,9 @@
       if (saved) {
         await loadAndMergeProgress(user);
 
+        // If sign-in was requested from a purchase, let checkout resume.
+        window.dispatchEvent(new CustomEvent("pq-auth-ready", { detail: { uid: user.uid } }));
+
         const successBox = document.querySelector(".auth-success");
         if (successBox) {
           successBox.textContent = "Cuenta conectada y progreso sincronizado.";

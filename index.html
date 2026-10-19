@@ -137,6 +137,18 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
+      window.addEventListener("pq-auth-ready", () => {
+        const pendingPlan = sessionStorage.getItem("pq_pending_checkout_plan");
+        if(!pendingPlan) return;
+
+        sessionStorage.removeItem("pq_pending_checkout_plan");
+        const authModal = document.getElementById("authModal");
+        if(authModal) authModal.classList.add("hidden");
+
+        const planButton = document.querySelector(`#paywall .plan[data-plan="${pendingPlan}"]`);
+        if(planButton) planButton.click();
+      });
+
       document.querySelectorAll("#paywall .plan[data-plan]").forEach(btn => {
         btn.addEventListener("click", async () => {
           const user = window.pqFirebaseAuth && window.pqFirebaseAuth.currentUser;
@@ -146,7 +158,18 @@
             if(paywall) paywall.classList.add("hidden");
 
             const authModal = document.getElementById("authModal");
-            if(authModal) authModal.classList.add("show");
+            if(authModal) authModal.classList.remove("hidden");
+
+            // Remember the selected package so checkout can resume automatically
+            // after Google sign-in, without making the user choose it again.
+            sessionStorage.setItem("pq_pending_checkout_plan", btn.dataset.plan);
+
+            const authTitle = document.getElementById("authTitle");
+            if(authTitle) authTitle.textContent = "Protege tu compra";
+
+            const signedOutView = document.getElementById("signedOutView");
+            const authCopy = signedOutView ? signedOutView.querySelector("p") : null;
+            if(authCopy) authCopy.textContent = "Continúa con Google para que tu compra quede asociada a tu cuenta y funcione en todos tus dispositivos.";
 
             return;
           }

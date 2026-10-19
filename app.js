@@ -169,9 +169,12 @@ function updateAccessUI(){
 }
 
 function canOpenQuestion(questionId){
-  const idx = exploreOrder.indexOf(questionId);
-  if(idx < 0) return true;
-  return idx < unlockedCount;
+  // A question already discovered always remains available.
+  if(discovered.includes(questionId)) return true;
+
+  // Free/paid limits count actual discoveries, not positions in the shuffled deck.
+  // Skipping a question does not consume one of the user's available discoveries.
+  return discovered.length < unlockedCount;
 }
 
 function showPaywall(){
@@ -316,7 +319,10 @@ function reveal(mode){
   // Funnel milestones for the free Meta/IG/FB experience.
   if(activeTab==="explore" && accessPlan==="free"){
     pqTrackOnce("trial_started", { questionId: q.id });
-    if(currentIndex === FREE_LIMIT - 1){
+
+    // The 10th milestone is the 10th UNIQUE question actually discovered,
+    // regardless of how many unanswered cards the visitor skipped.
+    if(!discovered.includes(q.id) && discovered.length === FREE_LIMIT - 1){
       pqTrackOnce("question_10_reached", { questionId: q.id });
     }
   }
@@ -338,8 +344,9 @@ function nextQuestion(){
   if(!list.length) return;
 
   if(activeTab==="explore"){
-    // No permitimos avanzar más allá del acceso comprado.
-    if(currentIndex + 1 >= unlockedCount){
+    // The paywall appears only after the user has actually discovered
+    // the full allowance (10 free, 100, 300, etc.).
+    if(discovered.length >= unlockedCount){
       showPaywall();
       return;
     }
