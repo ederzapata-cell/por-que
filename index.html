@@ -151,6 +151,13 @@
 
       document.querySelectorAll("#paywall .plan[data-plan]").forEach(btn => {
         btn.addEventListener("click", async () => {
+          const plan = btn.dataset.plan;
+
+          // Commercial funnel: capture purchase intent before Google/Wompi.
+          if(typeof window.pqTrackFunnelEvent === "function"){
+            window.pqTrackFunnelEvent("checkout_click", { plan });
+          }
+
           const user = window.pqFirebaseAuth && window.pqFirebaseAuth.currentUser;
 
           if(!user){
@@ -174,7 +181,6 @@
             return;
           }
 
-          const plan = btn.dataset.plan;
           const originalText = btn.innerHTML;
 
           try {

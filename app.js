@@ -100,7 +100,12 @@ async function pqTrackEvent(eventName, extra = {}){
   }
 }
 
-function pqTrackOnce(eventName, extra = {}){
+function pqTrackOnce(eventName, extra = {}
+
+window.pqTrackFunnelEvent = function(eventName, extra = {}) {
+  return pqTrackEvent(eventName, extra);
+};
+){
   const attribution = (() => {
     try { return JSON.parse(localStorage.getItem("pq_attribution") || "null"); }
     catch (_) { return null; }
