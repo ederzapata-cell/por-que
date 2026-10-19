@@ -1,31 +1,22 @@
-# ¿Por qué? — MVP front-end
+# Por Qué? — PWA Assets
 
-Primera versión funcional del concepto acordado.
+Paquete creado a partir del logo aprobado de Por Qué?.
 
-Incluye:
-- 30 preguntas reales
-- Sencillo / Profundo
-- giro de tarjeta al revelar
-- transición visual por color
-- swipe izquierda/derecha
-- preguntas aleatorias
-- 10 preguntas gratis
-- paywall visual de demostración
-- Mis preguntas
-- persistencia local con localStorage
-- sin login, pagos ni audio todavía
+## Contenido
+- icons/icon-16x16.png hasta icon-1024x1024.png
+- favicon.ico
+- favicon PNG 16 y 32
+- apple-touch-icon.png (180x180)
+- icon-192x192.png y icon-512x512.png
+- maskable-icon-192x192.png y maskable-icon-512x512.png
+- manifest.webmanifest
+- HEAD-SNIPPET.html
 
-## Probar
-Abre `index.html` en el navegador. Para una prueba más fiel, sirve la carpeta con un servidor local.
+## Instalación
+1. Copia la carpeta `icons` a la raíz del proyecto.
+2. Copia `manifest.webmanifest` a la raíz.
+3. Pega el contenido de `HEAD-SNIPPET.html` dentro del `<head>` de `index.html`.
+4. Publica y prueba la instalación de la PWA en celular y escritorio.
 
-## Próximo paso recomendado
-1. pulir identidad visual con ilustraciones propias
-2. conectar Firebase Auth + Firestore
-3. conectar pagos
-4. convertir a PWA
-5. audio TTS
-
-## Diseño visual actual
-- Diseño tipográfico, sin imágenes ni emojis
-- La pregunta es el protagonista visual
-- Optimizado para lectura y uso móvil
+Nota: los iconos normales conservan exactamente el logo proporcionado.
+Las versiones maskable añaden margen de seguridad para evitar recortes del sistema.
