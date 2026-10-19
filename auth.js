@@ -127,7 +127,12 @@
     const ref = db.collection("users").doc(user.uid);
 
     try {
-      await ref.set({
+      let attribution = null;
+      try {
+        attribution = JSON.parse(localStorage.getItem("pq_attribution") || "null");
+      } catch (_) {}
+
+      const userData = {
         uid: user.uid,
         name: user.displayName || "",
         email: user.email || "",
@@ -137,7 +142,14 @@
           ? firebase.firestore.Timestamp.fromDate(new Date(user.metadata.creationTime))
           : firebase.firestore.FieldValue.serverTimestamp(),
         lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
+      };
+
+      if(attribution && attribution.first){
+        userData.marketingFirstSource = attribution.first;
+        userData.marketingLastSource = attribution.last || attribution.first;
+      }
+
+      await ref.set(userData, { merge: true });
 
       window.pqUserDocRef = ref;
       window.pqFirestoreUserSaved = true;

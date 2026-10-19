@@ -1,4 +1,38 @@
 
+// ---------- Traffic source attribution ----------
+(function captureTrafficSource(){
+  const params = new URLSearchParams(window.location.search);
+  const src = (params.get("src") || "").trim();
+  const utmSource = (params.get("utm_source") || "").trim();
+  const utmMedium = (params.get("utm_medium") || "").trim();
+  const utmCampaign = (params.get("utm_campaign") || "").trim();
+  const utmContent = (params.get("utm_content") || "").trim();
+
+  // Only create/update attribution when the URL actually carries campaign data.
+  if(!src && !utmSource && !utmMedium && !utmCampaign && !utmContent) return;
+
+  const now = new Date().toISOString();
+  const current = JSON.parse(localStorage.getItem("pq_attribution") || "null") || {};
+
+  const visit = {
+    src: src || utmSource || "direct",
+    utm_source: utmSource || "",
+    utm_medium: utmMedium || "",
+    utm_campaign: utmCampaign || "",
+    utm_content: utmContent || "",
+    landing_path: window.location.pathname,
+    captured_at: now
+  };
+
+  const attribution = {
+    first: current.first || visit,
+    last: visit
+  };
+
+  localStorage.setItem("pq_attribution", JSON.stringify(attribution));
+  window.pqAttribution = attribution;
+})();
+
 const FREE_LIMIT = 10;
 const QUESTIONS = window.QUESTIONS || [];
 
