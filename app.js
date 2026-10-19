@@ -33,6 +33,56 @@
   window.pqAttribution = attribution;
 })();
 
+// ---------- Funnel analytics ----------
+async function pqTrackEvent(eventName, extra = {}){
+  try{
+    const attribution = JSON.parse(localStorage.getItem("pq_attribution") || "null");
+    const payload = {
+      event: eventName,
+      at: new Date().toISOString(),
+      src: attribution?.last?.src || attribution?.first?.src || "direct",
+      path: window.location.pathname,
+      ...extra
+    };
+
+    // Local copy makes the event available even before sign-in.
+    const key = "pq_funnel_events";
+    const events = JSON.parse(localStorage.getItem(key) || "[]");
+    events.push(payload);
+    localStorage.setItem(key, JSON.stringify(events.slice(-100)));
+
+    // If Firebase Auth/Firestore are available and the user is signed in,
+    // also persist the event for funnel reporting.
+    const user = (typeof firebase !== "undefined" && firebase.auth)
+      ? firebase.auth().currentUser
+      : null;
+    if(user && typeof db !== "undefined"){
+      await db.collection("users").doc(user.uid)
+        .collection("funnel_events").add({
+          ...payload,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    }
+  }catch(err){
+    console.warn("Funnel analytics:", err);
+  }
+}
+
+function pqTrackOnce(eventName, extra = {}){
+  const attribution = (() => {
+    try { return JSON.parse(localStorage.getItem("pq_attribution") || "null"); }
+    catch (_) { return null; }
+  })();
+  const src = attribution?.last?.src || attribution?.first?.src || "direct";
+  const key = `pq_event_once_${eventName}_${src}`;
+  if(sessionStorage.getItem(key)) return;
+  sessionStorage.setItem(key, "1");
+  pqTrackEvent(eventName, extra);
+}
+
+// Opening the experience.
+pqTrackOnce("app_open");
+
 const FREE_LIMIT = 10;
 const QUESTIONS = window.QUESTIONS || [];
 
@@ -94,6 +144,7 @@ function canOpenQuestion(questionId){
 
 function showPaywall(){
   if(paywall) paywall.classList.remove("hidden");
+  pqTrackOnce("paywall_view", { accessPlan, unlockedCount });
 }
 
 function markProgressUpdated(){
@@ -228,6 +279,14 @@ function reveal(mode){
   if(activeTab==="explore" && !discovered.includes(q.id) && !canOpenQuestion(q.id)){
     showPaywall();
     return;
+  }
+
+  // Funnel milestones for the free Meta/IG/FB experience.
+  if(activeTab==="explore" && accessPlan==="free"){
+    pqTrackOnce("trial_started", { questionId: q.id });
+    if(currentIndex === FREE_LIMIT - 1){
+      pqTrackOnce("question_10_reached", { questionId: q.id });
+    }
   }
 
   markDiscovered(q);
