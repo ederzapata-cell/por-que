@@ -34,34 +34,62 @@
 })();
 
 // ---------- Funnel analytics ----------
+function pqGetVisitorId(){
+  let id = localStorage.getItem("pq_visitor_id");
+  if(!id){
+    if(window.crypto && typeof window.crypto.randomUUID === "function"){
+      id = "v_" + window.crypto.randomUUID();
+    }else{
+      id = "v_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2,12);
+    }
+    localStorage.setItem("pq_visitor_id", id);
+  }
+  return id;
+}
+
 async function pqTrackEvent(eventName, extra = {}){
   try{
+    const visitorId = pqGetVisitorId();
     const attribution = JSON.parse(localStorage.getItem("pq_attribution") || "null");
+    const src = attribution?.last?.src || attribution?.first?.src || "direct";
+
     const payload = {
       event: eventName,
+      visitorId,
       at: new Date().toISOString(),
-      src: attribution?.last?.src || attribution?.first?.src || "direct",
+      src,
       path: window.location.pathname,
       ...extra
     };
 
-    // Local copy makes the event available even before sign-in.
+    // Keep a local copy as a fallback.
     const key = "pq_funnel_events";
     const events = JSON.parse(localStorage.getItem(key) || "[]");
     events.push(payload);
     localStorage.setItem(key, JSON.stringify(events.slice(-100)));
 
-    // If Firebase Auth/Firestore are available and the user is signed in,
-    // also persist the event for funnel reporting.
-    const user = (typeof firebase !== "undefined" && firebase.auth)
-      ? firebase.auth().currentUser
-      : null;
-    if(user && typeof db !== "undefined"){
-      await db.collection("users").doc(user.uid)
-        .collection("funnel_events").add({
-          ...payload,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
+    // Persist every funnel event anonymously; sign-in is NOT required.
+    if(typeof db !== "undefined"){
+      const eventRef = db.collection("funnel_events").doc();
+      await eventRef.set({
+        ...payload,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        userId: (firebase.auth && firebase.auth().currentUser)
+          ? firebase.auth().currentUser.uid
+          : null
+      });
+
+      // Maintain one lightweight visitor record for attribution and later linking.
+      await db.collection("visitors").doc(visitorId).set({
+        visitorId,
+        firstSource: attribution?.first || null,
+        lastSource: attribution?.last || null,
+        lastEvent: eventName,
+        lastSeenAt: firebase.firestore.FieldValue.serverTimestamp(),
+        userId: (firebase.auth && firebase.auth().currentUser)
+          ? firebase.auth().currentUser.uid
+          : null
+      }, { merge: true });
     }
   }catch(err){
     console.warn("Funnel analytics:", err);
@@ -80,7 +108,7 @@ function pqTrackOnce(eventName, extra = {}){
   pqTrackEvent(eventName, extra);
 }
 
-// Opening the experience.
+// Opening the experience. No name, email or registration required.
 pqTrackOnce("app_open");
 
 const FREE_LIMIT = 10;
