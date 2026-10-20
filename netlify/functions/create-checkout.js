@@ -46,6 +46,7 @@ exports.handler = async function(event) {
 
     const body = JSON.parse(event.body || "{}");
     const plan = body.plan;
+    const requestedEmail = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
 
     if (!PLANS[plan]) {
       return json(400, { error: "Invalid plan" });
@@ -53,7 +54,15 @@ exports.handler = async function(event) {
 
     const config = PLANS[plan];
     const uid = decoded.uid;
-    const email = decoded.email || "";
+
+    // Google users use their verified Firebase email. Anonymous buyers may
+    // provide an email only as Wompi purchase/contact metadata. Access remains
+    // securely tied to the Firebase UID embedded in the signed reference.
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const email = decoded.email || requestedEmail;
+    if (!email || !emailPattern.test(email) || email.length > 254) {
+      return json(400, { error: "Valid email required" });
+    }
 
     const nonce = crypto.randomBytes(8).toString("hex");
     const timestamp = Date.now();

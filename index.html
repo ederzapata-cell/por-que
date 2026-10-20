@@ -93,9 +93,23 @@
         <div class="user-avatar" id="userAvatar">U</div>
         <h2 id="userName">Cuenta conectada</h2>
         <p id="userEmail"></p>
-        <div class="auth-success">Google Sign-In funciona correctamente.</div>
+        <div class="auth-success">Cuenta conectada y progreso sincronizado.</div>
         <button class="signout-button" id="signOutButton">Cerrar sesión</button>
       </div>
+    </div>
+  </div>
+
+  <div class="purchase-email-modal hidden" id="purchaseEmailModal" role="dialog" aria-modal="true" aria-labelledby="purchaseEmailTitle">
+    <div class="purchase-email-card">
+      <button class="close-auth" id="closePurchaseEmail" aria-label="Cerrar">×</button>
+      <div class="auth-mark">¿Por qué?</div>
+      <h2 id="purchaseEmailTitle">¿A qué correo asociamos tu compra?</h2>
+      <p>Lo usaremos para identificar tu compra. No necesitas entrar con Google para pagar.</p>
+      <form id="purchaseEmailForm">
+        <input class="purchase-email-input" id="purchaseEmailInput" type="email" inputmode="email" autocomplete="email" placeholder="tu@correo.com" required />
+        <button class="purchase-email-button" id="purchaseEmailContinue" type="submit">Continuar al pago</button>
+      </form>
+      <p class="auth-status" id="purchaseEmailStatus"></p>
     </div>
   </div>
 
@@ -137,88 +151,135 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      window.addEventListener("pq-auth-ready", () => {
-        const pendingPlan = sessionStorage.getItem("pq_pending_checkout_plan");
-        if(!pendingPlan) return;
+      const auth = window.pqFirebaseAuth;
+      const paywall = document.getElementById("paywall");
+      const emailModal = document.getElementById("purchaseEmailModal");
+      const emailForm = document.getElementById("purchaseEmailForm");
+      const emailInput = document.getElementById("purchaseEmailInput");
+      const emailStatus = document.getElementById("purchaseEmailStatus");
+      const emailContinue = document.getElementById("purchaseEmailContinue");
+      const closePurchaseEmail = document.getElementById("closePurchaseEmail");
 
-        sessionStorage.removeItem("pq_pending_checkout_plan");
-        const authModal = document.getElementById("authModal");
-        if(authModal) authModal.classList.add("hidden");
+      let pendingPlan = null;
 
-        const planButton = document.querySelector(`#paywall .plan[data-plan="${pendingPlan}"]`);
-        if(planButton) planButton.click();
-      });
+      function openEmailStep(plan){
+        pendingPlan = plan;
+        if(paywall) paywall.classList.add("hidden");
+        if(emailModal) emailModal.classList.remove("hidden");
+        if(emailStatus){
+          emailStatus.textContent = "";
+          emailStatus.classList.remove("error");
+        }
+        setTimeout(() => emailInput && emailInput.focus(), 50);
+      }
+
+      function closeEmailStep(){
+        if(emailModal) emailModal.classList.add("hidden");
+        pendingPlan = null;
+      }
+
+      async function startCheckout(plan, email){
+        if(!auth) throw new Error("Firebase Auth no está disponible.");
+
+        let user = auth.currentUser;
+        if(!user){
+          const credential = await auth.signInAnonymously();
+          user = credential.user;
+        }
+
+        const idToken = await user.getIdToken(true);
+        const response = await fetch("/.netlify/functions/create-checkout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${idToken}`
+          },
+          body: JSON.stringify({ plan, email: email || user.email || "" })
+        });
+
+        const data = await response.json();
+        if(!response.ok){
+          throw new Error(data.error || "No se pudo preparar el pago.");
+        }
+
+        const params = new URLSearchParams({
+          "public-key": data.publicKey,
+          "currency": data.currency,
+          "amount-in-cents": String(data.amountInCents),
+          "reference": data.reference,
+          "signature:integrity": data.signature,
+          "redirect-url": data.redirectUrl
+        });
+
+        if(data.customerEmail){
+          params.set("customer-data:email", data.customerEmail);
+        }
+
+        window.location.href = `https://checkout.wompi.co/p/?${params.toString()}`;
+      }
 
       document.querySelectorAll("#paywall .plan[data-plan]").forEach(btn => {
         btn.addEventListener("click", async () => {
-          const user = window.pqFirebaseAuth && window.pqFirebaseAuth.currentUser;
+          const plan = btn.dataset.plan;
+          const user = auth && auth.currentUser;
 
-          if(!user){
-            const paywall = document.getElementById("paywall");
-            if(paywall) paywall.classList.add("hidden");
-
-            const authModal = document.getElementById("authModal");
-            if(authModal) authModal.classList.remove("hidden");
-
-            // Remember the selected package so checkout can resume automatically
-            // after Google sign-in, without making the user choose it again.
-            sessionStorage.setItem("pq_pending_checkout_plan", btn.dataset.plan);
-
-            const authTitle = document.getElementById("authTitle");
-            if(authTitle) authTitle.textContent = "Protege tu compra";
-
-            const signedOutView = document.getElementById("signedOutView");
-            const authCopy = signedOutView ? signedOutView.querySelector("p") : null;
-            if(authCopy) authCopy.textContent = "Continúa con Google para que tu compra quede asociada a tu cuenta y funcione en todos tus dispositivos.";
-
+          // Existing Google accounts keep their current frictionless checkout.
+          if(user && !user.isAnonymous && user.email){
+            const originalText = btn.innerHTML;
+            try {
+              btn.disabled = true;
+              btn.innerHTML = "<strong>Preparando pago...</strong>";
+              await startCheckout(plan, user.email);
+            } catch(error) {
+              console.error(error);
+              alert("No pudimos preparar el pago. Intenta de nuevo.");
+              btn.disabled = false;
+              btn.innerHTML = originalText;
+            }
             return;
           }
 
-          const plan = btn.dataset.plan;
-          const originalText = btn.innerHTML;
-
-          try {
-            btn.disabled = true;
-            btn.innerHTML = "<strong>Preparando pago...</strong>";
-
-            const idToken = await user.getIdToken(true);
-
-            const response = await fetch("/.netlify/functions/create-checkout", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${idToken}`
-              },
-              body: JSON.stringify({ plan })
-            });
-
-            const data = await response.json();
-
-            if(!response.ok){
-              throw new Error(data.error || "No se pudo preparar el pago.");
-            }
-
-            const params = new URLSearchParams({
-              "public-key": data.publicKey,
-              "currency": data.currency,
-              "amount-in-cents": String(data.amountInCents),
-              "reference": data.reference,
-              "signature:integrity": data.signature,
-              "redirect-url": data.redirectUrl
-            });
-
-            if(data.customerEmail){
-              params.set("customer-data:email", data.customerEmail);
-            }
-
-            window.location.href = `https://checkout.wompi.co/p/?${params.toString()}`;
-          } catch(error) {
-            console.error(error);
-            alert("No pudimos preparar el pago. Intenta de nuevo.");
-            btn.disabled = false;
-            btn.innerHTML = originalText;
-          }
+          // Instagram/Facebook-safe path: email + anonymous Firebase session.
+          openEmailStep(plan);
         });
+      });
+
+      emailForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if(!pendingPlan) return;
+
+        const email = String(emailInput.value || "").trim().toLowerCase();
+        if(!email || !emailInput.checkValidity()){
+          emailInput.reportValidity();
+          return;
+        }
+
+        emailContinue.disabled = true;
+        emailContinue.textContent = "Preparando pago...";
+        emailStatus.textContent = "";
+        emailStatus.classList.remove("error");
+
+        try {
+          await startCheckout(pendingPlan, email);
+        } catch(error) {
+          console.error(error);
+          emailStatus.textContent = "No pudimos preparar el pago. Intenta de nuevo.";
+          emailStatus.classList.add("error");
+          emailContinue.disabled = false;
+          emailContinue.textContent = "Continuar al pago";
+        }
+      });
+
+      closePurchaseEmail.addEventListener("click", () => {
+        closeEmailStep();
+        if(paywall) paywall.classList.remove("hidden");
+      });
+
+      emailModal.addEventListener("click", (event) => {
+        if(event.target === emailModal){
+          closeEmailStep();
+          if(paywall) paywall.classList.remove("hidden");
+        }
       });
     });
   </script>
