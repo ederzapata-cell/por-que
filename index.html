@@ -86,6 +86,14 @@
           <span>Continuar con Google</span>
         </button>
 
+        <div class="email-login-separator"><span>o</span></div>
+        <form id="emailLoginForm">
+          <input class="purchase-email-input" id="emailLoginEmail" type="email" autocomplete="email" placeholder="tu@correo.com" required />
+          <input class="purchase-email-input" id="emailLoginPassword" type="password" autocomplete="current-password" minlength="6" placeholder="Contraseña" required />
+          <button class="purchase-email-button" id="emailLoginButton" type="submit">Entrar con correo</button>
+        </form>
+        <button class="password-reset-button" id="passwordResetButton" type="button">Olvidé mi contraseña</button>
+
         <p class="auth-status" id="authStatus"></p>
       </div>
 
@@ -94,6 +102,18 @@
         <h2 id="userName">Cuenta conectada</h2>
         <p id="userEmail"></p>
         <div class="auth-success">Cuenta conectada y progreso sincronizado.</div>
+
+        <div class="protect-purchase hidden" id="protectPurchaseView">
+          <h3>Protege tu compra</h3>
+          <p>Crea una contraseña para usar tu acceso en otros dispositivos.</p>
+          <form id="protectPurchaseForm">
+            <input class="purchase-email-input" id="protectPurchaseEmail" type="email" autocomplete="email" placeholder="tu@correo.com" required />
+            <input class="purchase-email-input" id="protectPurchasePassword" type="password" autocomplete="new-password" minlength="6" placeholder="Contraseña · mínimo 6 caracteres" required />
+            <button class="purchase-email-button" id="protectPurchaseButton" type="submit">Proteger mi compra</button>
+          </form>
+          <p class="auth-status" id="protectPurchaseStatus"></p>
+        </div>
+
         <button class="signout-button" id="signOutButton">Cerrar sesión</button>
       </div>
     </div>
@@ -180,6 +200,11 @@
 
       async function startCheckout(plan, email){
         if(!auth) throw new Error("Firebase Auth no está disponible.");
+
+        if(email){
+          localStorage.setItem("pq_purchase_email", String(email).trim().toLowerCase());
+          localStorage.setItem("pq_purchase_plan", String(plan));
+        }
 
         let user = auth.currentUser;
         if(!user){

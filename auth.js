@@ -18,6 +18,17 @@
   const userName = document.getElementById("userName");
   const userEmail = document.getElementById("userEmail");
   const signOutButton = document.getElementById("signOutButton");
+  const emailLoginForm = document.getElementById("emailLoginForm");
+  const emailLoginEmail = document.getElementById("emailLoginEmail");
+  const emailLoginPassword = document.getElementById("emailLoginPassword");
+  const emailLoginButton = document.getElementById("emailLoginButton");
+  const passwordResetButton = document.getElementById("passwordResetButton");
+  const protectPurchaseView = document.getElementById("protectPurchaseView");
+  const protectPurchaseForm = document.getElementById("protectPurchaseForm");
+  const protectPurchaseEmail = document.getElementById("protectPurchaseEmail");
+  const protectPurchasePassword = document.getElementById("protectPurchasePassword");
+  const protectPurchaseButton = document.getElementById("protectPurchaseButton");
+  const protectPurchaseStatus = document.getElementById("protectPurchaseStatus");
 
   function openAuth() {
     authModal.classList.remove("hidden");
@@ -137,7 +148,7 @@
         name: user.displayName || "",
         email: user.email || "",
         photoURL: user.photoURL || "",
-        provider: "google",
+        provider: user.isAnonymous ? "anonymous" : ((user.providerData && user.providerData[0] && user.providerData[0].providerId) || "email"),
         createdAt: user.metadata && user.metadata.creationTime
           ? firebase.firestore.Timestamp.fromDate(new Date(user.metadata.creationTime))
           : firebase.firestore.FieldValue.serverTimestamp(),
@@ -175,10 +186,11 @@
       accountInitial.textContent = initial;
       accountButton.classList.add("signed-in");
       userAvatar.textContent = initial;
-      userName.textContent = user.displayName || "Cuenta conectada";
-      userEmail.textContent = user.email || "";
-      accountButton.setAttribute("aria-label", "Cuenta conectada");
-      accountButton.title = user.email || "Cuenta";
+      userName.textContent = user.isAnonymous ? "Tu acceso actual" : (user.displayName || "Cuenta conectada");
+      userEmail.textContent = user.email || (user.isAnonymous ? "Compra todavía no protegida" : "");
+      accountButton.setAttribute("aria-label", user.isAnonymous ? "Proteger acceso" : "Cuenta conectada");
+      accountButton.title = user.email || (user.isAnonymous ? "Proteger acceso" : "Cuenta");
+      if(signOutButton) signOutButton.classList.toggle("hidden", !!user.isAnonymous);
     } else {
       signedInView.classList.add("hidden");
       signedOutView.classList.remove("hidden");
@@ -187,8 +199,144 @@
       accountButton.classList.remove("signed-in");
       accountButton.setAttribute("aria-label", "Entrar con Google");
       accountButton.title = "Entrar";
+      if(signOutButton) signOutButton.classList.remove("hidden");
     }
   }
+
+  function paidPlan(data){
+    return data && ["100", "300", "all"].includes(data.plan);
+  }
+
+  function purchaseEmail(){
+    return String(localStorage.getItem("pq_purchase_email") || "").trim().toLowerCase();
+  }
+
+  async function refreshProtectionState(user, openWhenPaid = false){
+    if(!protectPurchaseView) return;
+    protectPurchaseView.classList.add("hidden");
+    if(!user || !user.isAnonymous || !db) return;
+
+    try{
+      const snap = await db.collection("users").doc(user.uid).get();
+      const data = snap.exists ? (snap.data() || {}) : {};
+      if(!paidPlan(data)) return;
+
+      const savedEmail = purchaseEmail();
+      if(protectPurchaseEmail && savedEmail) protectPurchaseEmail.value = savedEmail;
+      protectPurchaseView.classList.remove("hidden");
+      if(openWhenPaid) openAuth();
+    }catch(error){
+      console.error("No se pudo revisar la protección de compra:", error);
+    }
+  }
+
+  async function waitForPaidPlan(user){
+    if(!user || !user.isAnonymous || !db) return;
+    for(let attempt = 0; attempt < 8; attempt += 1){
+      await refreshProtectionState(user, true);
+      const snap = await db.collection("users").doc(user.uid).get();
+      if(snap.exists && paidPlan(snap.data() || {})) return;
+      await new Promise(resolve => setTimeout(resolve, 1500));
+    }
+  }
+
+  emailLoginForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const email = String(emailLoginEmail?.value || "").trim().toLowerCase();
+    const password = String(emailLoginPassword?.value || "");
+    if(!email || !password) return;
+
+    emailLoginButton.disabled = true;
+    authStatus.textContent = "Entrando…";
+    authStatus.classList.remove("error");
+    try{
+      await auth.signInWithEmailAndPassword(email, password);
+      authStatus.textContent = "";
+      closeAuthModal();
+    }catch(error){
+      console.error(error);
+      authStatus.textContent = "No pudimos entrar con ese correo y contraseña.";
+      authStatus.classList.add("error");
+    }finally{
+      emailLoginButton.disabled = false;
+    }
+  });
+
+  passwordResetButton?.addEventListener("click", async () => {
+    const email = String(emailLoginEmail?.value || "").trim().toLowerCase();
+    if(!email){
+      authStatus.textContent = "Escribe primero tu correo.";
+      authStatus.classList.add("error");
+      emailLoginEmail?.focus();
+      return;
+    }
+    try{
+      await auth.sendPasswordResetEmail(email);
+      authStatus.textContent = "Te enviamos un correo para crear una nueva contraseña.";
+      authStatus.classList.remove("error");
+    }catch(error){
+      console.error(error);
+      authStatus.textContent = "No pudimos enviar el correo de recuperación.";
+      authStatus.classList.add("error");
+    }
+  });
+
+  protectPurchaseForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const user = auth.currentUser;
+    if(!user || !user.isAnonymous){
+      protectPurchaseStatus.textContent = "Este acceso ya está protegido.";
+      return;
+    }
+
+    const email = String(protectPurchaseEmail?.value || "").trim().toLowerCase();
+    const password = String(protectPurchasePassword?.value || "");
+    if(!email || password.length < 6){
+      protectPurchaseStatus.textContent = "Usa un correo válido y una contraseña de mínimo 6 caracteres.";
+      protectPurchaseStatus.classList.add("error");
+      return;
+    }
+
+    const expectedEmail = purchaseEmail();
+    if(expectedEmail && email !== expectedEmail){
+      protectPurchaseStatus.textContent = "Usa el mismo correo que escribiste para la compra.";
+      protectPurchaseStatus.classList.add("error");
+      return;
+    }
+
+    protectPurchaseButton.disabled = true;
+    protectPurchaseButton.textContent = "Protegiendo…";
+    protectPurchaseStatus.textContent = "";
+    protectPurchaseStatus.classList.remove("error");
+
+    try{
+      const credential = firebase.auth.EmailAuthProvider.credential(email, password);
+      const result = await user.linkWithCredential(credential);
+      await result.user.getIdToken(true);
+      await ensureUserDocument(result.user);
+      await loadAndMergeProgress(result.user);
+      localStorage.removeItem("pq_purchase_email");
+      localStorage.removeItem("pq_purchase_plan");
+      renderUser(result.user);
+      protectPurchaseView.classList.add("hidden");
+      const successBox = document.querySelector(".auth-success");
+      if(successBox) successBox.textContent = "Compra protegida. Ya puedes entrar con tu correo y contraseña en otros dispositivos.";
+      protectPurchaseStatus.textContent = "";
+    }catch(error){
+      console.error(error);
+      const friendly = {
+        "auth/email-already-in-use": "Ese correo ya tiene una cuenta. No cierres esta sesión: contáctanos para asociar esta compra a tu cuenta existente.",
+        "auth/invalid-email": "Revisa el correo.",
+        "auth/weak-password": "Usa una contraseña de mínimo 6 caracteres.",
+        "auth/provider-already-linked": "Este acceso ya está protegido."
+      };
+      protectPurchaseStatus.textContent = friendly[error.code] || "No pudimos proteger la compra. Intenta de nuevo.";
+      protectPurchaseStatus.classList.add("error");
+    }finally{
+      protectPurchaseButton.disabled = false;
+      protectPurchaseButton.textContent = "Proteger mi compra";
+    }
+  });
 
   accountButton.addEventListener("click", openAuth);
   closeAuth.addEventListener("click", closeAuthModal);
@@ -248,6 +396,12 @@
 
       if (saved) {
         await loadAndMergeProgress(user);
+        await refreshProtectionState(user, false);
+
+        const returnedFromPayment = new URLSearchParams(window.location.search).get("payment") === "return";
+        if(returnedFromPayment && user.isAnonymous){
+          waitForPaidPlan(user);
+        }
 
         // If sign-in was requested from a purchase, let checkout resume.
         window.dispatchEvent(new CustomEvent("pq-auth-ready", { detail: { uid: user.uid } }));

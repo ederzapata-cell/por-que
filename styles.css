@@ -330,3 +330,13 @@ text-wrap:pretty
   font-size:.82rem;
   margin-top:14px;
 }
+
+
+/* Purchase protection / email access */
+.email-login-separator{display:flex;align-items:center;gap:10px;margin:16px 0;color:var(--muted);font-weight:800}
+.email-login-separator::before,.email-login-separator::after{content:"";height:1px;background:rgba(16,36,91,.14);flex:1}
+.password-reset-button{border:0;background:transparent;color:#10245B;font:inherit;font-weight:800;cursor:pointer;margin-top:10px;text-decoration:underline}
+.protect-purchase{margin:18px 0 4px;padding:18px;border-radius:18px;background:#FFF9E8;text-align:left}
+.protect-purchase h3{margin:0 0 6px;color:#10245B}
+.protect-purchase p{margin:0 0 12px}
+.protect-purchase .purchase-email-input{margin-bottom:10px}
