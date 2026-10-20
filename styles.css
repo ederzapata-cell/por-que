@@ -340,3 +340,24 @@ text-wrap:pretty
 .protect-purchase h3{margin:0 0 6px;color:#10245B}
 .protect-purchase p{margin:0 0 12px}
 .protect-purchase .purchase-email-input{margin-bottom:10px}
+
+
+/* TEKKIFY legal footer */
+.legal-footer{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:7px;
+  padding:10px 16px 18px;
+  font-size:.76rem;
+  color:#6B7590;
+}
+.legal-footer a{
+  color:inherit;
+  text-decoration:none;
+}
+.legal-footer a:hover,
+.legal-footer a:focus-visible{
+  text-decoration:underline;
+}
